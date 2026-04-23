@@ -109,7 +109,8 @@ export async function generateFiles(args: EventArguments): Promise<void> {
     });
   }
 
-  const sourceFileCount = project.getSourceFiles().length;
+  const sourceFiles = project.getSourceFiles();
+  const sourceFileCount = sourceFiles.length;
   // eslint-disable-next-line no-console
   console.log(
     `nestjs-prisma-graphql: saving ${String(sourceFileCount)} source files to ${output}`,
@@ -136,6 +137,24 @@ export async function generateFiles(args: EventArguments): Promise<void> {
       eventEmitter.emitSync('Warning', errors);
     }
   } else {
-    await project.save();
+    // For large schemas (2000+ files), save in batches to avoid stack overflow
+    // ts-morph's project.save() can build up deep call stacks on large projects
+    const BATCH_SIZE = 100;
+    if (sourceFileCount > BATCH_SIZE) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `nestjs-prisma-graphql: using batched save for large schema (${String(sourceFileCount)} files)`,
+      );
+      for (let i = 0; i < sourceFileCount; i += BATCH_SIZE) {
+        const batch = sourceFiles.slice(i, i + BATCH_SIZE);
+        // eslint-disable-next-line no-console
+        console.log(
+          `nestjs-prisma-graphql: saving batch ${String(Math.floor(i / BATCH_SIZE) + 1)}/${String(Math.ceil(sourceFileCount / BATCH_SIZE))} (${String(batch.length)} files)`,
+        );
+        await Promise.all(batch.map(async sf => await sf.save()));
+      }
+    } else {
+      await project.save();
+    }
   }
 }
