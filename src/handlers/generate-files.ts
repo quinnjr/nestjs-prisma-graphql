@@ -112,9 +112,12 @@ export async function generateFiles(args: EventArguments): Promise<void> {
   const sourceFiles = project.getSourceFiles();
   const sourceFileCount = sourceFiles.length;
   // Type-safe console logging
+  type ConsoleLogFunction = (message?: unknown, ...optionalParams: unknown[]) => void;
+  const globalConsole: { log: ConsoleLogFunction } = globalThis.console as {
+    log: ConsoleLogFunction;
+  };
   const logMessage = (msg: string): void => {
-    // eslint-disable-next-line no-console
-    console.log(msg);
+    globalConsole.log(msg);
   };
   logMessage(
     `nestjs-prisma-graphql: saving ${String(sourceFileCount)} source files to ${output}`,

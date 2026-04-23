@@ -1,6 +1,4 @@
-/* eslint-disable no-console */
 import type { GeneratorOptions } from '@prisma/generator-helper';
-import type * as NodeFs from 'node:fs';
 
 import { existsSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -10,16 +8,20 @@ import { arch, platform } from 'node:os';
 type RequireFunction = (id: string) => unknown;
 type CreateRequireFunction = (filename: string) => RequireFunction;
 const createRequireTyped: CreateRequireFunction = createRequire as CreateRequireFunction;
-const requireCjs = createRequireTyped(import.meta.url);
+// ESLint doesn't understand import.meta.url type - cast to string explicitly
+const requireCjs: RequireFunction = createRequireTyped(String(import.meta.url));
 
 // Patch fs with graceful-fs to handle EMFILE errors during mass file generation.
 // This generator can produce 17k+ files; without this patch, constrained environments
 // (Docker, CI) hit file descriptor limits and fail silently.
+// Use Record<string, unknown> to avoid typeof issues with namespace imports
 interface GracefulFs {
-  gracefulify: (fs: typeof NodeFs) => void;
+  gracefulify: (fs: Record<string, unknown>) => void;
 }
-const gracefulFs: GracefulFs = requireCjs('graceful-fs') as GracefulFs;
-const nodeFs: typeof NodeFs = requireCjs('fs') as typeof NodeFs;
+const gracefulFsRaw: unknown = requireCjs('graceful-fs');
+const gracefulFs: GracefulFs = gracefulFsRaw as GracefulFs;
+const nodeFsRaw: unknown = requireCjs('fs');
+const nodeFs: Record<string, unknown> = nodeFsRaw as Record<string, unknown>;
 gracefulFs.gracefulify(nodeFs);
 
 // Catch process-level errors that would otherwise cause silent failures.
@@ -27,10 +29,11 @@ gracefulFs.gracefulify(nodeFs);
 // process crashes before sending a response, Prisma may report success.
 type LogFunction = (msg: string) => void;
 type ConsoleLogFunction = (message?: unknown, ...optionalParams: unknown[]) => void;
-const consoleLog: ConsoleLogFunction = console.log as ConsoleLogFunction;
+const globalConsole: { log: ConsoleLogFunction } = globalThis.console as {
+  log: ConsoleLogFunction;
+};
 const logError: LogFunction = (msg: string): void => {
-   
-  consoleLog(msg);
+  globalConsole.log(msg);
 };
 
 // Type-safe process event handlers
@@ -94,9 +97,20 @@ export interface GeneratorDisableConfig {
  * @param env - Environment variables (defaults to process.env)
  * @returns true if the generator should be disabled
  */
+// Helper to get process.env in a type-safe way
+// Using Record<string, unknown> to avoid NodeJS.Process type resolution issues
+const getProcessEnv = (): Record<string, string | undefined> => {
+  const globalProcess: unknown = process;
+  interface ProcessLike {
+    env: Record<string, string | undefined>;
+  }
+  const processLike: ProcessLike = globalProcess as ProcessLike;
+  return processLike.env;
+};
+
 export function isGeneratorDisabled(
   options: GeneratorOptions | { generator: GeneratorDisableConfig },
-  env: Record<string, string | undefined> = process.env as Record<string, string | undefined>,
+  env: Record<string, string | undefined> = getProcessEnv(),
 ): boolean {
   const envVarsToCheck = [
     'DISABLE_NESTJS_PRISMA_GRAPHQL',
@@ -127,9 +141,17 @@ interface DirEntry {
 
 function countFilesRecursive(dir: string): number {
   let count = 0;
-  const entries = readdirSync(dir, { withFileTypes: true }) as unknown as DirEntry[];
+  // Type-safe wrapper for readdirSync which doesn't have proper types in this context
+  type ReadDirSyncFunction = (
+    path: string,
+    options: { withFileTypes: boolean },
+  ) => unknown;
+  const readDirSyncTyped: ReadDirSyncFunction = readdirSync as ReadDirSyncFunction;
+  const rawEntries: unknown = readDirSyncTyped(dir, { withFileTypes: true });
+  const entries: DirEntry[] = rawEntries as DirEntry[];
   for (const entry of entries) {
-    const isDir: boolean = typeof entry.isDirectory === 'function' ? entry.isDirectory() : false;
+    const isDir: boolean =
+      typeof entry.isDirectory === 'function' ? entry.isDirectory() : false;
     if (isDir) {
       count += countFilesRecursive(`${dir}/${entry.name}`);
     } else {
@@ -141,10 +163,11 @@ function countFilesRecursive(dir: string): number {
 
 type LogFunc = (msg: string) => void;
 type ConsoleLogFunc = (message?: unknown, ...optionalParams: unknown[]) => void;
-const consoleLogFunc: ConsoleLogFunc = console.log as ConsoleLogFunc;
+const globalConsole2: { log: ConsoleLogFunc } = globalThis.console as {
+  log: ConsoleLogFunc;
+};
 const log: LogFunc = (msg: string): void => {
-   
-  consoleLogFunc(msg);
+  globalConsole2.log(msg);
 };
 
 generatorHandler({
@@ -159,9 +182,22 @@ generatorHandler({
     const outputPath = options.generator.output?.value ?? '<unknown>';
     const startTime = Date.now();
 
-    const archValue = String(arch());
-    const platformValue = String(platform());
-    const nodeVersion = String(process.version);
+    // Type-safe wrappers for node:os functions
+    type ArchFunction = () => unknown;
+    type PlatformFunction = () => unknown;
+    const archTyped: ArchFunction = arch as ArchFunction;
+    const platformTyped: PlatformFunction = platform as PlatformFunction;
+
+    const archValue = String(archTyped());
+    const platformValue = String(platformTyped());
+    const globalProcess2Raw: unknown = process;
+    // Use interface to avoid NodeJS.Process type resolution issues
+    interface ProcessLikeWithVersion {
+      version: string;
+    }
+    const processWithVersion: ProcessLikeWithVersion =
+      globalProcess2Raw as ProcessLikeWithVersion;
+    const nodeVersion: string = processWithVersion.version;
     log(
       [
         'nestjs-prisma-graphql: starting generation',
@@ -176,7 +212,9 @@ generatorHandler({
       const message = error instanceof Error ? error.message : String(error);
       const stack = error instanceof Error ? error.stack : undefined;
 
-      log(`nestjs-prisma-graphql: generation FAILED after ${String(elapsed)}ms: ${message}`);
+      log(
+        `nestjs-prisma-graphql: generation FAILED after ${String(elapsed)}ms: ${message}`,
+      );
       if (typeof stack === 'string') {
         log(stack);
       }
@@ -186,12 +224,15 @@ generatorHandler({
 
     const elapsed = Date.now() - startTime;
 
-    if (
+    // Type-safe wrapper for existsSync
+    type ExistsSyncFunc = (path: string) => boolean;
+    const existsSyncTyped: ExistsSyncFunc = existsSync as ExistsSyncFunc;
+    const pathExists: boolean =
       typeof outputPath === 'string' &&
       outputPath !== '<unknown>' &&
-      existsSync(outputPath)
-    ) {
-      const fileCount = countFilesRecursive(outputPath);
+      existsSyncTyped(outputPath);
+    if (pathExists) {
+      const fileCount: number = countFilesRecursive(outputPath);
       log(
         `nestjs-prisma-graphql: generated ${String(fileCount)} files in ${String(elapsed)}ms`,
       );

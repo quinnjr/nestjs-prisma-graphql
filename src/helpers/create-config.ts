@@ -1,9 +1,10 @@
 import { unflatten } from 'flat';
 import JSON5 from 'json5';
 import { memoize, merge, trim } from 'lodash-es';
-import { ok } from 'node:assert';
 import { existsSync } from 'node:fs';
 import outmatch from 'outmatch';
+
+import { ok } from './type-safe-assert.js';
 
 type Dictionary<T = unknown> = Record<string, T>;
 
@@ -58,18 +59,17 @@ export function createConfig(data: Record<string, unknown>): {
   const $warnings: string[] = [];
 
   const defaultPattern = `{model}/{name}.{type}.ts`;
-  const configOutputFilePattern =
-    typeof config.outputFilePattern === 'string'
-      ? config.outputFilePattern
-      : defaultPattern;
+  const outputFilePatternValue: unknown = config.outputFilePattern;
+  const configOutputFilePattern: string =
+    typeof outputFilePatternValue === 'string' ? outputFilePatternValue : defaultPattern;
 
   // Validate and sanitize the output file pattern
   // We don't use filenamify on the template itself since it contains placeholders like {model}, {name}, {type}
   // Instead, we just normalize the path separators and trim
-  let outputFilePattern = configOutputFilePattern
+  const sanitizedStep1: string = configOutputFilePattern
     .replaceAll('..', '/')
     .replaceAll(/\/+/g, '/');
-  outputFilePattern = trim(outputFilePattern, '/');
+  const outputFilePattern: string = trim(sanitizedStep1, '/');
 
   if (outputFilePattern !== configOutputFilePattern) {
     $warnings.push(
@@ -187,8 +187,7 @@ export function createConfig(data: Record<string, unknown>): {
     outputFilePattern,
     prismaClientImport: createPrismaImport(config.prismaClientImport),
     purgeOutput: toBoolean(config.purgeOutput),
-    reExport: (ReExport[String(config.reExport) as keyof typeof ReExport] ??
-      ReExport.None),
+    reExport: ReExport[String(config.reExport) as keyof typeof ReExport] ?? ReExport.None,
     requireSingleFieldsInWhereUniqueInput: toBoolean(
       config.requireSingleFieldsInWhereUniqueInput,
     ),
@@ -206,15 +205,22 @@ interface ConfigInputItem {
   [index: string]: string | undefined;
 }
 
-const tsConfigFileExists = memoize((filePath: string) => {
-  return existsSync(filePath);
+type FileExistsFunction = (filePath: string) => boolean;
+type ExistsSyncFunction = (path: string) => boolean;
+const existsSyncTyped: ExistsSyncFunction = existsSync as ExistsSyncFunction;
+const tsConfigFileExistsRaw: unknown = memoize((filePath: string): boolean => {
+  const exists: boolean = existsSyncTyped(filePath);
+  return exists;
 });
+const tsConfigFileExists: FileExistsFunction =
+  tsConfigFileExistsRaw as FileExistsFunction;
 
 function createTsConfigFilePathValue(value: unknown): string | undefined {
   if (typeof value === 'string' && value !== '') {
     return value;
   }
-  if (tsConfigFileExists('tsconfig.json')) {
+  const fileExists: boolean = tsConfigFileExists('tsconfig.json');
+  if (fileExists) {
     return 'tsconfig.json';
   }
   return undefined;

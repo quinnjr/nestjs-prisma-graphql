@@ -9,10 +9,11 @@ import { ok } from './helpers/type-safe-assert.js';
 // Use createRequire for CommonJS module compatibility in ESM
 // Type-safe wrapper for require to avoid 'any' type issues
 type RequireFunction = (id: string) => unknown;
-const createRequireTyped: (filename: string | URL) => RequireFunction = createRequire as (
-  filename: string | URL,
+const createRequireTyped: (filename: string) => RequireFunction = createRequire as (
+  filename: string,
 ) => RequireFunction;
-const requireCjs: RequireFunction = createRequireTyped(import.meta.url);
+// ESLint doesn't understand import.meta.url type - cast to string explicitly
+const requireCjs: RequireFunction = createRequireTyped(String(import.meta.url));
 
 // Type for await-event-emitter's default export
 type AwaitEventEmitterConstructor = new () => EventEmitter;
@@ -160,7 +161,7 @@ export async function generate(
   const removeTypes = new Set<string>();
 
   // Build circular dependency detection for ESM compatibility
-  const datamodelTypes: Model[] = (datamodel.types ?? []);
+  const datamodelTypes: Model[] = datamodel.types ?? [];
   const allModels: Model[] = [...datamodel.models, ...datamodelTypes];
   const dependencyGraph = buildDependencyGraph(allModels);
   const circularDependencies = detectCircularDependencies(dependencyGraph);
