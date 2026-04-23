@@ -12,22 +12,24 @@ export function propertyStructure(args: {
   hasExclamationToken?: boolean;
 }): PropertyDeclarationStructure {
   const {
-    isNullable,
-    propertyType,
-    name,
-    isList,
-    hasQuestionToken,
     hasExclamationToken,
+    hasQuestionToken,
+    isList,
+    isNullable,
+    name,
+    propertyType,
   } = args;
-  const type = propertyType.map(type => (isList ? `Array<${type}>` : type)).join(' | ');
+  const typeString = propertyType
+    .map(typeItem => (isList ? `Array<${typeItem}>` : typeItem))
+    .join(' | ');
 
   return {
-    kind: StructureKind.Property,
-    name,
-    type,
-    hasQuestionToken: hasQuestionToken ?? isNullable,
-    hasExclamationToken: hasExclamationToken ?? !isNullable,
     decorators: [],
+    hasExclamationToken: hasExclamationToken ?? !isNullable,
+    hasQuestionToken: hasQuestionToken ?? isNullable,
+    kind: StructureKind.Property,
     leadingTrivia: '\n',
+    name,
+    type: typeString,
   };
 }

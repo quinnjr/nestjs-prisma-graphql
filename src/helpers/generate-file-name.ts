@@ -6,14 +6,14 @@ import pupa from 'pupa';
 export function generateFileName(args: {
   type: string;
   name: string;
-  getModelName(name: string): string | undefined;
+  getModelName: (name: string) => string | undefined;
   template: string;
-}) {
+}): string {
   const { getModelName, name, template, type } = args;
 
   const rawPath = pupa(template, {
     get model() {
-      const result = getModelName(name) || 'prisma';
+      const result = getModelName(name) ?? 'prisma';
       return kebabCase(result);
     },
     get name() {

@@ -1,8 +1,10 @@
-import { ok } from 'node:assert';
+import type { EventArguments, OutputType } from '../types.js';
+import type { PlainObject } from 'simplytyped';
+
 import JSON5 from 'json5';
 import { castArray } from 'lodash-es';
+import { ok } from 'node:assert';
 import pupa from 'pupa';
-import type { PlainObject } from 'simplytyped';
 import {
   type ClassDeclarationStructure,
   type ExportSpecifierStructure,
@@ -20,11 +22,10 @@ import { isManyAndReturnOutputType } from '../helpers/is-many-and-return.js';
 import {
   createObjectSettings,
   type ObjectSetting,
-  ObjectSettings,
+  type ObjectSettings,
 } from '../helpers/object-settings.js';
 import { propertyStructure } from '../helpers/property-structure.js';
 import { relativePath } from '../helpers/relative-path.js';
-import type { EventArguments, OutputType } from '../types.js';
 
 const nestjsGraphql = '@nestjs/graphql';
 
@@ -40,7 +41,9 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
     output,
   } = args;
 
-  if (isManyAndReturnOutputType(outputType.name)) return;
+  if (isManyAndReturnOutputType(outputType.name)) {
+    return;
+  }
 
   const model = models.get(outputType.name);
   ok(model, `Cannot find model by name ${outputType.name}`);
@@ -74,16 +77,18 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
 
   let modelSettings: ObjectSettings | undefined;
   // Get model settings from documentation
-  if (model.documentation) {
+  if (
+    model.documentation !== null &&
+    model.documentation !== undefined &&
+    model.documentation.length > 0
+  ) {
     const objectTypeOptions: PlainObject = {};
     const { documentation, settings } = createObjectSettings({
       config,
       text: model.documentation,
     });
-    if (documentation) {
-      if (!classStructure.leadingTrivia) {
-        classStructure.leadingTrivia = createComment(documentation);
-      }
+    if (documentation !== undefined && documentation.length > 0) {
+      classStructure.leadingTrivia ??= createComment(documentation);
       objectTypeOptions.description = documentation;
     }
     decorator.arguments = settings.getObjectTypeArguments(objectTypeOptions);
@@ -107,12 +112,14 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
   }
 
   for (const field of outputType.fields) {
-    if (config.omitModelsCount && field.name === '_count') continue;
+    if (config.omitModelsCount && field.name === '_count') {
+      continue;
+    }
 
     let fileType = 'model';
     const { isList, location, namespace, type } = field.outputType;
 
-    let outputTypeName = String(type);
+    let outputTypeName = type;
     if (namespace !== 'model') {
       fileType = 'output';
       outputTypeName = getOutputTypeName(outputTypeName);
@@ -139,17 +146,14 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
     // For model we keep only one type
     propertyType.splice(1, propertyType.length);
 
-    if (field.isNullable && !isList) {
+    if (field.isNullable === true && !isList) {
       propertyType.push('null');
     }
 
     let graphqlType: string;
     let useGetType = false;
 
-    if (fieldType) {
-      graphqlType = fieldType.name;
-      importDeclarations.create({ ...fieldType });
-    } else {
+    if (fieldType === undefined) {
       const graphqlImport = getGraphqlImport({
         config,
         fileType,
@@ -163,7 +167,12 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
 
       graphqlType = graphqlImport.name;
 
-      if (graphqlImport.name !== outputType.name && graphqlImport.specifier) {
+      if (
+        graphqlImport.name !== outputType.name &&
+        graphqlImport.specifier !== null &&
+        graphqlImport.specifier !== undefined &&
+        graphqlImport.specifier.length > 0
+      ) {
         // Check for circular dependency in ESM mode
         const isCircular =
           config.esmCompatible &&
@@ -179,6 +188,9 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
           importDeclarations.add(graphqlImport.name, graphqlImport.specifier);
         }
       }
+    } else {
+      graphqlType = fieldType.name;
+      importDeclarations.create({ ...fieldType });
     }
 
     const property = propertyStructure({
@@ -190,22 +202,29 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
       propertyType,
     });
 
-    if (typeof property.leadingTrivia === 'string' && modelField?.documentation) {
+    if (
+      typeof property.leadingTrivia === 'string' &&
+      modelField?.documentation !== null &&
+      modelField?.documentation !== undefined &&
+      modelField.documentation.length > 0
+    ) {
       property.leadingTrivia += createComment(modelField.documentation, settings);
     }
 
-    classStructure.properties?.push(property);
+    if (classStructure.properties !== undefined) {
+      classStructure.properties.push(property);
+    }
 
-    if (propertySettings) {
+    if (propertySettings !== undefined) {
       importDeclarations.create({ ...propertySettings });
     } else if (propertyType.some(p => p.includes('Prisma.Decimal'))) {
       importDeclarations.add('Prisma', config.prismaClientImport);
     }
 
-    ok(property.decorators, 'property.decorators is undefined');
+    ok(property.decorators !== undefined, 'property.decorators is undefined');
 
     const shouldHideField =
-      settings?.shouldHideField({ name: outputType.name, output: true }) ||
+      settings?.shouldHideField({ name: outputType.name, output: true }) === true ||
       config.decorate.some(
         d =>
           d.name === 'HideField' &&
@@ -238,7 +257,12 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
             )
               ? modelField?.default
               : undefined,
-            description: modelField?.documentation,
+            description:
+              modelField?.documentation !== null &&
+              modelField?.documentation !== undefined &&
+              modelField.documentation !== ''
+                ? modelField.documentation
+                : undefined,
             nullable: Boolean(field.isNullable),
           }),
         ],
@@ -251,7 +275,10 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
             arguments: setting.arguments as string[],
             name: setting.name,
           });
-          ok(setting.from, "Missed 'from' part in configuration or field setting");
+          ok(
+            setting.from && setting.from.length > 0,
+            "Missed 'from' part in configuration or field setting",
+          );
           importDeclarations.create(setting);
         }
       }
@@ -286,7 +313,7 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
   }
 
   // Build statements array
-  const statements: (StatementStructures | string)[] = [
+  const statements: Array<StatementStructures | string> = [
     ...importDeclarations.toStatements(),
     classStructure,
   ];
@@ -322,7 +349,10 @@ function shouldBeDecorated(setting: ObjectSetting): boolean {
   );
 }
 
-function getExportDeclaration(name: string, statements: StatementStructures[]): StatementStructures | undefined {
+function getExportDeclaration(
+  name: string,
+  statements: StatementStructures[],
+): StatementStructures | undefined {
   return statements.find(structure => {
     return (
       structure.kind === StructureKind.ExportDeclaration &&

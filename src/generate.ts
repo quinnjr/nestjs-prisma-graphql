@@ -1,7 +1,8 @@
 import type { GeneratorOptions } from '@prisma/generator-helper';
+
+import { mapKeys } from 'lodash-es';
 import { ok } from 'node:assert';
 import { createRequire } from 'node:module';
-import { mapKeys } from 'lodash-es';
 import { Project, QuoteKind } from 'ts-morph';
 
 // Use createRequire for CommonJS module compatibility in ESM
@@ -9,31 +10,6 @@ const requireCjs = createRequire(import.meta.url);
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
 const AwaitEventEmitter = requireCjs('await-event-emitter').default;
 
-import { argsType } from './handlers/args-type.js';
-import { combineScalarFilters } from './handlers/combine-scalar-filters.js';
-import { createAggregateInput } from './handlers/create-aggregate-input.js';
-import { emitSingle } from './handlers/emit-single.js';
-import { generateFiles } from './handlers/generate-files.js';
-import { inputType } from './handlers/input-type.js';
-import { modelData } from './handlers/model-data.js';
-import { modelOutputType } from './handlers/model-output-type.js';
-import { noAtomicOperations } from './handlers/no-atomic-operations.js';
-import { outputType } from './handlers/output-type.js';
-import { purgeOutput } from './handlers/purge-output.js';
-import { ReExport, reExport } from './handlers/re-export.js';
-import { registerEnum } from './handlers/register-enum.js';
-import { generateRegisterAllTypes } from './handlers/register-all-types.js';
-import { requireSingleFieldsInWhereUniqueInput } from './handlers/require-single-fields-in-whereunique-input.js';
-import { generateTypeRegistry } from './handlers/type-registry.js';
-import { generateDecimalHelpers } from './handlers/decimal-helpers.js';
-import { warning } from './handlers/warning.js';
-import { createConfig } from './helpers/create-config.js';
-import {
-  buildDependencyGraph,
-  detectCircularDependencies,
-} from './helpers/detect-circular-deps.js';
-import { factoryGetSourceFile } from './helpers/factory-get-source-file.js';
-import { createGetModelName } from './helpers/get-model-name.js';
 import type {
   Document,
   EventArguments,
@@ -44,6 +20,32 @@ import type {
   OutputType,
 } from './types.js';
 
+import { argsType } from './handlers/args-type.js';
+import { combineScalarFilters } from './handlers/combine-scalar-filters.js';
+import { createAggregateInput } from './handlers/create-aggregate-input.js';
+import { generateDecimalHelpers } from './handlers/decimal-helpers.js';
+import { emitSingle } from './handlers/emit-single.js';
+import { generateFiles } from './handlers/generate-files.js';
+import { inputType } from './handlers/input-type.js';
+import { modelData } from './handlers/model-data.js';
+import { modelOutputType } from './handlers/model-output-type.js';
+import { noAtomicOperations } from './handlers/no-atomic-operations.js';
+import { outputType } from './handlers/output-type.js';
+import { purgeOutput } from './handlers/purge-output.js';
+import { ReExport, reExport } from './handlers/re-export.js';
+import { generateRegisterAllTypes } from './handlers/register-all-types.js';
+import { registerEnum } from './handlers/register-enum.js';
+import { requireSingleFieldsInWhereUniqueInput } from './handlers/require-single-fields-in-whereunique-input.js';
+import { generateTypeRegistry } from './handlers/type-registry.js';
+import { warning } from './handlers/warning.js';
+import { createConfig } from './helpers/create-config.js';
+import {
+  buildDependencyGraph,
+  detectCircularDependencies,
+} from './helpers/detect-circular-deps.js';
+import { factoryGetSourceFile } from './helpers/factory-get-source-file.js';
+import { createGetModelName } from './helpers/get-model-name.js';
+
 export async function generate(
   args: GeneratorOptions & {
     skipAddOutputSourceFiles?: boolean;
@@ -52,17 +54,23 @@ export async function generate(
       eventArguments: EventArguments,
     ) => void | Promise<void>;
   },
-) {
+): Promise<void> {
   const { connectCallback, dmmf, generator, skipAddOutputSourceFiles } = args;
 
   const generatorOutputValue = generator.output?.value;
-  ok(generatorOutputValue, 'Missing generator configuration: output');
+  ok(
+    generatorOutputValue !== null && generatorOutputValue !== undefined,
+    'Missing generator configuration: output',
+  );
 
   const config = createConfig(generator.config);
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   const eventEmitter = new AwaitEventEmitter() as EventEmitter;
   eventEmitter.on('Warning', warning);
-  config.emitBlocks.models && eventEmitter.on('Model', modelData);
+  if (config.emitBlocks.models) {
+    eventEmitter.on('Model', modelData);
+  }
   if (config.emitBlocks.prismaEnums || config.emitBlocks.schemaEnums) {
     eventEmitter.on('EnumType', registerEnum);
   }
@@ -72,10 +80,19 @@ export async function generate(
   ) {
     eventEmitter.on('OutputType', outputType);
   }
-  config.emitBlocks.models && eventEmitter.on('ModelOutputType', modelOutputType);
-  config.emitBlocks.outputs && eventEmitter.on('AggregateOutput', createAggregateInput);
-  config.emitBlocks.inputs && eventEmitter.on('InputType', inputType);
-  config.emitBlocks.args && eventEmitter.on('ArgsType', argsType);
+  if (config.emitBlocks.models) {
+    eventEmitter.on('ModelOutputType', modelOutputType);
+  }
+  if (config.emitBlocks.outputs) {
+    eventEmitter.on('AggregateOutput', createAggregateInput);
+  }
+  if (config.emitBlocks.inputs) {
+    eventEmitter.on('InputType', inputType);
+  }
+  if (config.emitBlocks.args) {
+    eventEmitter.on('ArgsType', argsType);
+  }
+
   eventEmitter.on('GenerateFiles', generateFiles);
 
   for (const message of config.$warnings) {
@@ -91,20 +108,31 @@ export async function generate(
     tsConfigFilePath: config.tsConfigFilePath,
   });
 
-  if (!skipAddOutputSourceFiles) {
+  if (skipAddOutputSourceFiles !== true) {
     project.addSourceFilesAtPaths([
       `${generatorOutputValue}/**/*.ts`,
       `!${generatorOutputValue}/**/*.d.ts`,
     ]);
   }
 
-  config.combineScalarFilters && combineScalarFilters(eventEmitter);
-  config.noAtomicOperations && noAtomicOperations(eventEmitter);
-  config.reExport !== ReExport.None && reExport(eventEmitter);
-  config.emitSingle && emitSingle(eventEmitter);
-  config.purgeOutput && purgeOutput(eventEmitter);
-  config.requireSingleFieldsInWhereUniqueInput &&
+  if (config.combineScalarFilters) {
+    combineScalarFilters(eventEmitter);
+  }
+  if (config.noAtomicOperations) {
+    noAtomicOperations(eventEmitter);
+  }
+  if (config.reExport !== ReExport.None) {
+    reExport(eventEmitter);
+  }
+  if (config.emitSingle) {
+    emitSingle(eventEmitter);
+  }
+  if (config.purgeOutput) {
+    purgeOutput(eventEmitter);
+  }
+  if (config.requireSingleFieldsInWhereUniqueInput) {
     requireSingleFieldsInWhereUniqueInput(eventEmitter);
+  }
 
   const models = new Map<string, Model>();
   const modelNames: string[] = [];
@@ -122,7 +150,8 @@ export async function generate(
   const removeTypes = new Set<string>();
 
   // Build circular dependency detection for ESM compatibility
-  const allModels = [...datamodel.models, ...(datamodel.types ?? [])] as Model[];
+  const datamodelTypes = datamodel.types ?? [];
+  const allModels: Model[] = [...datamodel.models, ...datamodelTypes];
   const dependencyGraph = buildDependencyGraph(allModels);
   const circularDependencies = detectCircularDependencies(dependencyGraph);
 
@@ -166,7 +195,7 @@ export async function generate(
   }
 
   // Types behaves like model
-  for (const model of datamodel.types ?? []) {
+  for (const model of datamodelTypes) {
     await eventEmitter.emit('Model', model, eventArguments);
   }
 
@@ -225,7 +254,9 @@ export async function generate(
   await eventEmitter.emit('GenerateFiles', eventArguments);
   await eventEmitter.emit('End', eventArguments);
 
-  for (const name of Object.keys((eventEmitter as unknown as { _events: Record<string, unknown> })._events)) {
+  for (const name of Object.keys(
+    (eventEmitter as unknown as { _events: Record<string, unknown> })._events,
+  )) {
     eventEmitter.off(name);
   }
 }

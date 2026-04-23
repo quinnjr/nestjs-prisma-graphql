@@ -1,15 +1,17 @@
 type EnumValueDocInfo = { description: string } | { deprecationReason: string };
 
 export function extractEnumValueDocs(
-  values: readonly { name: string; [key: string]: unknown }[],
+  values: ReadonlyArray<{ name: string; [key: string]: unknown }>,
 ): Record<string, EnumValueDocInfo> {
   return Object.fromEntries(
     values
       .map((value): [string, EnumValueDocInfo] | null => {
         const { name } = value;
-        const documentation: unknown = value.documentation;
+        const { documentation } = value;
 
-        if (typeof documentation !== 'string') return null;
+        if (typeof documentation !== 'string') {
+          return null;
+        }
 
         if (documentation.startsWith('@deprecated')) {
           return [name, { deprecationReason: documentation.slice(11).trim() }];

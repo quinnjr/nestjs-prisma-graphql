@@ -1,6 +1,6 @@
-import { Project, QuoteKind } from 'ts-morph';
+import { Project, QuoteKind, type SourceFile } from 'ts-morph';
 
-export function createTestProject() {
+export function createTestProject(): Project {
   return new Project({
     manipulationSettings: {
       quoteKind: QuoteKind.Single,
@@ -10,6 +10,10 @@ export function createTestProject() {
   });
 }
 
-export function createTestSourceFile(project: Project, content: string, fileName = 'test.ts') {
+export function createTestSourceFile(
+  project: Project,
+  content: string,
+  fileName = 'test.ts',
+): SourceFile {
   return project.createSourceFile(fileName, content, { overwrite: true });
 }

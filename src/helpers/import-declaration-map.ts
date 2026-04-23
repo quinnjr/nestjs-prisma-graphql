@@ -9,10 +9,10 @@ export class ImportDeclarationMap extends Map<
   string,
   OptionalKind<ImportDeclarationStructure>
 > {
-  add(name: string, moduleSpecifier: string, isTypeOnly?: boolean): void;
-  add(name: string, value: OptionalKind<ImportDeclarationStructure>): void;
+  public add(name: string, moduleSpecifier: string, isTypeOnly?: boolean): void;
+  public add(name: string, value: OptionalKind<ImportDeclarationStructure>): void;
 
-  add(
+  public add(
     name: string,
     value: OptionalKind<ImportDeclarationStructure> | string,
     isTypeOnly?: boolean,
@@ -20,7 +20,7 @@ export class ImportDeclarationMap extends Map<
     if (!this.has(name)) {
       const structure: OptionalKind<ImportDeclarationStructure> =
         typeof value === 'string'
-          ? { moduleSpecifier: value, namedImports: [{ name }], isTypeOnly }
+          ? { isTypeOnly, moduleSpecifier: value, namedImports: [{ name }] }
           : value;
       this.set(name, structure);
     }
@@ -29,56 +29,62 @@ export class ImportDeclarationMap extends Map<
   /**
    * Add a type-only import for ESM circular dependency resolution
    */
-  addType(name: string, moduleSpecifier: string): void {
+  public addType(name: string, moduleSpecifier: string): void {
     const typeOnlyKey = `type:${name}`;
     if (!this.has(typeOnlyKey) && !this.has(name)) {
       this.set(typeOnlyKey, {
+        isTypeOnly: true,
         moduleSpecifier,
         namedImports: [{ name }],
-        isTypeOnly: true,
       });
     }
   }
 
-  create(args: {
+  public create(args: {
     name: string;
     from: string;
     defaultImport?: string | true;
     namespaceImport?: string;
     namedImport?: boolean;
     isTypeOnly?: boolean;
-  }) {
-    const { from, defaultImport, namespaceImport, namedImport, isTypeOnly } = args;
-    let name = args.name;
+  }): void {
+    const { defaultImport, from, isTypeOnly, namedImport, namespaceImport } = args;
+    let { name } = args;
     const value: OptionalKind<ImportDeclarationStructure> = {
-      moduleSpecifier: from,
-      namedImports: [] as OptionalKind<ImportSpecifierStructure>[],
       defaultImport: undefined as string | undefined,
-      namespaceImport: undefined as string | undefined,
       isTypeOnly,
+      moduleSpecifier: from,
+      namedImports: [] as Array<OptionalKind<ImportSpecifierStructure>>,
+      namespaceImport: undefined as string | undefined,
     };
-    if (namedImport === true && namespaceImport) {
+    if (namedImport === true && namespaceImport !== undefined) {
       value.namedImports = [{ name: namespaceImport }];
+
       name = namespaceImport;
-    } else if (defaultImport) {
-      value.defaultImport = defaultImport === true ? name : defaultImport;
-      name = value.defaultImport;
-    } else if (namespaceImport) {
-      value.namespaceImport = namespaceImport;
-      name = namespaceImport;
+    } else if (defaultImport === undefined) {
+      if (namespaceImport === undefined) {
+        value.namedImports = [{ name }];
+      } else {
+        value.namespaceImport = namespaceImport;
+
+        name = namespaceImport;
+      }
     } else {
-      value.namedImports = [{ name }];
+      value.defaultImport = defaultImport === true ? name : defaultImport;
+
+      name = value.defaultImport;
     }
-    const key = isTypeOnly ? `type:${name}` : name;
-    if (!this.has(key)) {
-      this.set(key, value);
+    const key = isTypeOnly === true ? `type:${name}` : name;
+    if (this.has(key)) {
+      return;
     }
+    this.set(key, value);
   }
 
-  *toStatements(): Iterable<ImportDeclarationStructure> {
+  public *toStatements(): Iterable<ImportDeclarationStructure> {
     const iterator = this.values();
     let result = iterator.next();
-    while (result.value) {
+    while (result.value !== undefined) {
       yield {
         ...result.value,
         kind: StructureKind.ImportDeclaration,

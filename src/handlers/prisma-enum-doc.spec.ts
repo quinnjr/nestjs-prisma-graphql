@@ -6,8 +6,8 @@ describe('extractEnumValueDocs', () => {
   describe('description extraction', () => {
     it('should extract description from documentation', () => {
       const values = [
-        { name: 'ADMIN', documentation: 'Administrator role' },
-        { name: 'USER', documentation: 'Regular user role' },
+        { documentation: 'Administrator role', name: 'ADMIN' },
+        { documentation: 'Regular user role', name: 'USER' },
       ];
 
       const result = extractEnumValueDocs(values);
@@ -19,7 +19,7 @@ describe('extractEnumValueDocs', () => {
     });
 
     it('should handle single value', () => {
-      const values = [{ name: 'ACTIVE', documentation: 'Active status' }];
+      const values = [{ documentation: 'Active status', name: 'ACTIVE' }];
 
       const result = extractEnumValueDocs(values);
 
@@ -32,7 +32,7 @@ describe('extractEnumValueDocs', () => {
   describe('deprecation extraction', () => {
     it('should extract deprecation reason from @deprecated', () => {
       const values = [
-        { name: 'OLD_VALUE', documentation: '@deprecated Use NEW_VALUE instead' },
+        { documentation: '@deprecated Use NEW_VALUE instead', name: 'OLD_VALUE' },
       ];
 
       const result = extractEnumValueDocs(values);
@@ -44,7 +44,7 @@ describe('extractEnumValueDocs', () => {
 
     it('should trim deprecation reason', () => {
       const values = [
-        { name: 'DEPRECATED', documentation: '@deprecated   Will be removed   ' },
+        { documentation: '@deprecated   Will be removed   ', name: 'DEPRECATED' },
       ];
 
       const result = extractEnumValueDocs(values);
@@ -55,7 +55,7 @@ describe('extractEnumValueDocs', () => {
     });
 
     it('should handle @deprecated with no reason', () => {
-      const values = [{ name: 'OLD', documentation: '@deprecated' }];
+      const values = [{ documentation: '@deprecated', name: 'OLD' }];
 
       const result = extractEnumValueDocs(values);
 
@@ -66,17 +66,17 @@ describe('extractEnumValueDocs', () => {
   describe('mixed values', () => {
     it('should handle mix of documented and deprecated values', () => {
       const values = [
-        { name: 'ACTIVE', documentation: 'Active status' },
-        { name: 'INACTIVE', documentation: '@deprecated Use ARCHIVED instead' },
-        { name: 'ARCHIVED', documentation: 'Archived status' },
+        { documentation: 'Active status', name: 'ACTIVE' },
+        { documentation: '@deprecated Use ARCHIVED instead', name: 'INACTIVE' },
+        { documentation: 'Archived status', name: 'ARCHIVED' },
       ];
 
       const result = extractEnumValueDocs(values);
 
       expect(result).toEqual({
         ACTIVE: { description: 'Active status' },
-        INACTIVE: { deprecationReason: 'Use ARCHIVED instead' },
         ARCHIVED: { description: 'Archived status' },
+        INACTIVE: { deprecationReason: 'Use ARCHIVED instead' },
       });
     });
   });
@@ -84,7 +84,7 @@ describe('extractEnumValueDocs', () => {
   describe('values without documentation', () => {
     it('should skip values without documentation', () => {
       const values = [
-        { name: 'DOCUMENTED', documentation: 'Has docs' },
+        { documentation: 'Has docs', name: 'DOCUMENTED' },
         { name: 'UNDOCUMENTED' },
       ];
 
@@ -98,10 +98,10 @@ describe('extractEnumValueDocs', () => {
 
     it('should skip values with non-string documentation', () => {
       const values = [
-        { name: 'STRING_DOC', documentation: 'String documentation' },
-        { name: 'NUMBER_DOC', documentation: 123 },
-        { name: 'NULL_DOC', documentation: null },
-        { name: 'UNDEFINED_DOC', documentation: undefined },
+        { documentation: 'String documentation', name: 'STRING_DOC' },
+        { documentation: 123, name: 'NUMBER_DOC' },
+        { documentation: null, name: 'NULL_DOC' },
+        { documentation: undefined, name: 'UNDEFINED_DOC' },
       ];
 
       const result = extractEnumValueDocs(values as any);
@@ -121,7 +121,7 @@ describe('extractEnumValueDocs', () => {
 
   describe('edge cases', () => {
     it('should handle empty documentation string', () => {
-      const values = [{ name: 'EMPTY', documentation: '' }];
+      const values = [{ documentation: '', name: 'EMPTY' }];
 
       const result = extractEnumValueDocs(values);
 
@@ -130,7 +130,7 @@ describe('extractEnumValueDocs', () => {
     });
 
     it('should handle documentation with only @deprecated', () => {
-      const values = [{ name: 'DEP', documentation: '@deprecated' }];
+      const values = [{ documentation: '@deprecated', name: 'DEP' }];
 
       const result = extractEnumValueDocs(values);
 
@@ -139,8 +139,8 @@ describe('extractEnumValueDocs', () => {
 
     it('should handle @deprecated case sensitivity', () => {
       const values = [
-        { name: 'CASE1', documentation: '@deprecated reason' },
-        { name: 'CASE2', documentation: '@DEPRECATED reason' },
+        { documentation: '@deprecated reason', name: 'CASE1' },
+        { documentation: '@DEPRECATED reason', name: 'CASE2' },
       ];
 
       const result = extractEnumValueDocs(values);
@@ -151,9 +151,7 @@ describe('extractEnumValueDocs', () => {
     });
 
     it('should handle multiline documentation', () => {
-      const values = [
-        { name: 'MULTI', documentation: 'Line 1\nLine 2\nLine 3' },
-      ];
+      const values = [{ documentation: 'Line 1\nLine 2\nLine 3', name: 'MULTI' }];
 
       const result = extractEnumValueDocs(values);
 

@@ -42,7 +42,7 @@ export function getPropertyType(args: {
     return [type];
   }
   if (location === 'enumTypes') {
-    const enumType = '`${' + type + '}`';
+    const enumType = `\`\${${type}}\``;
 
     return [enumType];
   }

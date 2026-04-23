@@ -1,29 +1,32 @@
-import type { Project } from 'ts-morph';
-
 import type { EventEmitter } from '../types.js';
+import type { Project, SourceFile } from 'ts-morph';
+
 import { generateFileName } from './generate-file-name.js';
 
 export function factoryGetSourceFile(args: {
   output: string;
   outputFilePattern: string;
   project: Project;
-  getModelName(name: string): string | undefined;
+  getModelName: (name: string) => string | undefined;
   eventEmitter: EventEmitter;
 }) {
-  const { outputFilePattern, output, getModelName, project } = args;
+  const { getModelName, output, outputFilePattern, project } = args;
 
-  return function getSourceFile(args: { type: string; name: string }) {
-    const { name, type } = args;
+  return function getSourceFile(getSourceFileArgs: {
+    type: string;
+    name: string;
+  }): SourceFile {
+    const { name, type } = getSourceFileArgs;
     let filePath = generateFileName({
       getModelName,
       name,
-      type,
       template: outputFilePattern,
+      type,
     });
     filePath = `${output}/${filePath}`;
 
     return (
-      project.getSourceFile(filePath) ||
+      project.getSourceFile(filePath) ??
       project.createSourceFile(filePath, undefined, { overwrite: true })
     );
   };
