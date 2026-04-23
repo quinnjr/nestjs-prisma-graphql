@@ -6,14 +6,14 @@ import pupa from 'pupa';
 export function generateFileName(args: {
   type: string;
   name: string;
-  getModelName(name: string): string | undefined;
+  getModelName: (name: string) => string | undefined;
   template: string;
-}) {
+}): string {
   const { getModelName, name, template, type } = args;
 
   const rawPath = pupa(template, {
-    get model() {
-      const result = getModelName(name) || 'prisma';
+    get model(): string {
+      const result = getModelName(name) ?? 'prisma';
       return kebabCase(result);
     },
     get name() {
@@ -39,6 +39,6 @@ export function generateFileName(args: {
   // Use maxLength: 255 (actual OS limit on ext4, NTFS, and HFS+)
   return rawPath
     .split('/')
-    .map(segment => filenamify(segment, { replacement: '-', maxLength: 255 }))
+    .map(segment => filenamify(segment, { maxLength: 255, replacement: '-' }))
     .join('/');
 }
