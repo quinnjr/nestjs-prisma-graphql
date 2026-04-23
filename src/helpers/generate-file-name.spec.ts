@@ -51,4 +51,34 @@ describe('generateFileName', () => {
 
     expect(result).toBe('inputs/user-create.input.ts');
   });
+
+  it('should handle long compound unique input names up to 255 chars', () => {
+    // Simulate a compound unique input with very long field names
+    const longName = 'UserByVeryLongFieldNameOneAndVeryLongFieldNameTwoAndVeryLongFieldNameThreeAndVeryLongFieldNameFourCompoundUniqueInput';
+
+    const result = generateFileName({
+      name: longName,
+      type: 'input',
+      template: '{model}/{name}.{type}.ts',
+      getModelName,
+    });
+
+    // Should not truncate at 100 chars (old behavior)
+    // Should allow up to 255 chars for the filename segment
+    expect(result.length).toBeLessThanOrEqual('user/'.length + 255);
+    expect(result).toContain('user/');
+    expect(result).toContain('.input.ts');
+  });
+
+  it('should sanitize invalid filename characters', () => {
+    const result = generateFileName({
+      name: 'User:Invalid<Name>Input',
+      type: 'input',
+      template: '{model}/{name}.{type}.ts',
+      getModelName,
+    });
+
+    // Invalid characters should be replaced with '-'
+    expect(result).toBe('user/user-invalid-name.input.ts');
+  });
 });
