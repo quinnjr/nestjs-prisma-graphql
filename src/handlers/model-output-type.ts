@@ -181,7 +181,8 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
           hasCircularDependency(circularDependencies, outputType.name, outputTypeName);
 
         if (isCircular) {
-          importDeclarations.addType(graphqlImport.name, graphqlImport.specifier);
+          // Use regular import (not type-only) so registerType() executes
+          importDeclarations.add(graphqlImport.name, graphqlImport.specifier);
           lazyTypes.add(graphqlImport.name);
           useGetType = true;
         } else {
