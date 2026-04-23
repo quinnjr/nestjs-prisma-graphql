@@ -1,4 +1,5 @@
-import { ok } from 'node:assert';
+import type { EventArguments, ObjectSettings, OutputType } from '../types.js';
+
 import JSON5 from 'json5';
 import { castArray } from 'lodash-es';
 import { type ClassDeclarationStructure, StructureKind } from 'ts-morph';
@@ -9,7 +10,7 @@ import { getOutputTypeName } from '../helpers/get-output-type-name.js';
 import { getPropertyType } from '../helpers/get-property-type.js';
 import { ImportDeclarationMap } from '../helpers/import-declaration-map.js';
 import { propertyStructure } from '../helpers/property-structure.js';
-import type { EventArguments, OutputType } from '../types.js';
+import { ok } from '../helpers/type-safe-assert.js';
 
 const nestjsGraphql = '@nestjs/graphql';
 
@@ -19,18 +20,25 @@ export function outputType(outputTypeArg: OutputType, args: EventArguments): voi
   const importDeclarations = new ImportDeclarationMap();
 
   const fileType = 'output';
-  const modelName = getModelName(outputTypeArg.name) ?? '';
-  const model = models.get(modelName);
+  const modelName = getModelName(outputTypeArg.name);
+  const model = modelName === undefined ? undefined : models.get(modelName);
   const isAggregateOutput =
-    model &&
+    model !== undefined &&
     /(?:Count|Avg|Sum|Min|Max)AggregateOutputType$/.test(outputTypeArg.name) &&
-    String(outputTypeArg.name).startsWith(model.name);
+    outputTypeArg.name.startsWith(model.name);
   const isCountOutput =
-    model?.name && outputTypeArg.name === `${model.name}CountOutputType`;
+    model?.name !== undefined &&
+    model.name !== '' &&
+    outputTypeArg.name === `${model.name}CountOutputType`;
 
-  if (!config.emitBlocks.outputs && !isCountOutput) return;
+  if (config.emitBlocks.outputs || isCountOutput) {
+    // Continue with output generation
+  } else {
+    return;
+  }
 
   // Get rid of bogus suffixes
+  // eslint-disable-next-line no-param-reassign
   outputTypeArg.name = getOutputTypeName(outputTypeArg.name);
 
   if (isAggregateOutput) {
@@ -60,10 +68,15 @@ export function outputType(outputTypeArg: OutputType, args: EventArguments): voi
 
   for (const field of outputTypeArg.fields) {
     const { isList, location, type } = field.outputType;
-    const outputTypeName = getOutputTypeName(String(type));
-    const settings = isCountOutput
-      ? undefined
-      : model && fieldSettings.get(model.name)?.get(field.name);
+    const outputTypeName = getOutputTypeName(type);
+    let settings: ObjectSettings | undefined;
+    if (isCountOutput) {
+      settings = undefined;
+    } else if (model === undefined) {
+      settings = undefined;
+    } else {
+      settings = fieldSettings.get(model.name)?.get(field.name);
+    }
     const propertySettings = settings?.getPropertyType({
       name: outputTypeArg.name,
       output: true,
@@ -92,7 +105,7 @@ export function outputType(outputTypeArg: OutputType, args: EventArguments): voi
 
     classStructure.properties?.push(property);
 
-    if (propertySettings) {
+    if (propertySettings !== undefined) {
       importDeclarations.create({ ...propertySettings });
     } else if (propertyType.some(p => p.includes('Prisma.Decimal'))) {
       importDeclarations.add('Prisma', config.prismaClientImport);
@@ -104,7 +117,7 @@ export function outputType(outputTypeArg: OutputType, args: EventArguments): voi
       settings?.shouldHideField({
         name: outputTypeArg.name,
         output: true,
-      }) ||
+      }) === true ||
       config.decorate.some(
         d =>
           d.name === 'HideField' &&
@@ -118,7 +131,7 @@ export function outputType(outputTypeArg: OutputType, args: EventArguments): voi
       output: true,
     });
 
-    if (fieldType && isCustomsApplicable && !shouldHideField) {
+    if (fieldType !== undefined && isCustomsApplicable && !shouldHideField) {
       graphqlType = fieldType.name;
       importDeclarations.create({ ...fieldType });
     } else {
@@ -137,7 +150,9 @@ export function outputType(outputTypeArg: OutputType, args: EventArguments): voi
       graphqlType = graphqlImport.name;
 
       if (
-        graphqlImport.specifier &&
+        graphqlImport.specifier !== null &&
+        graphqlImport.specifier !== undefined &&
+        graphqlImport.specifier.length > 0 &&
         !importDeclarations.has(graphqlImport.name) &&
         ((graphqlImport.name !== outputTypeArg.name && !shouldHideField) ||
           (shouldHideField && referenceName === graphqlImport.name))
@@ -149,7 +164,7 @@ export function outputType(outputTypeArg: OutputType, args: EventArguments): voi
       }
     }
 
-    ok(property.decorators, 'property.decorators is undefined');
+    ok(property.decorators !== undefined, 'property.decorators is undefined');
 
     if (shouldHideField) {
       importDeclarations.add('HideField', nestjsGraphql);
@@ -169,17 +184,22 @@ export function outputType(outputTypeArg: OutputType, args: EventArguments): voi
 
       if (isCustomsApplicable) {
         for (const options of settings ?? []) {
-          if (
-            (options.kind === 'Decorator' &&
-              options.output &&
-              options.match?.(field.name)) ??
-            true
-          ) {
+          const shouldApplyDecorator =
+            options.kind === 'Decorator' &&
+            options.output &&
+            (options.match?.(field.name) ?? true);
+
+          if (shouldApplyDecorator) {
             property.decorators.push({
               arguments: options.arguments as string[],
               name: options.name,
             });
-            ok(options.from, "Missed 'from' part in configuration or field setting");
+            ok(
+              options.from !== null &&
+                options.from !== undefined &&
+                options.from.length > 0,
+              "Missed 'from' part in configuration or field setting",
+            );
             importDeclarations.create(options);
           }
         }

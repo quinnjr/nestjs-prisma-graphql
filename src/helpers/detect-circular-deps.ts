@@ -24,7 +24,10 @@ export function buildDependencyGraph(models: Model[]): DependencyGraph {
 
   // Add edges for each relation field
   for (const model of models) {
-    const dependencies = graph.get(model.name)!;
+    const dependencies = graph.get(model.name);
+    if (!dependencies) {
+      continue;
+    }
     for (const field of model.fields) {
       // Only consider object/relation fields that reference other models
       if (field.kind === 'object' && field.type !== model.name) {
@@ -43,7 +46,9 @@ export function buildDependencyGraph(models: Model[]): DependencyGraph {
  * Detect all circular dependencies in the dependency graph using DFS
  * Returns a set of model pairs that form cycles
  */
-export function detectCircularDependencies(graph: DependencyGraph): CircularDependencySet {
+export function detectCircularDependencies(
+  graph: DependencyGraph,
+): CircularDependencySet {
   const circularPairs: CircularDependencySet = new Set();
   const visited = new Set<string>();
   const recursionStack = new Set<string>();
@@ -54,7 +59,7 @@ export function detectCircularDependencies(graph: DependencyGraph): CircularDepe
     recursionStack.add(node);
     path.push(node);
 
-    const dependencies = graph.get(node) || new Set();
+    const dependencies = graph.get(node) ?? new Set();
     for (const dep of dependencies) {
       if (!visited.has(dep)) {
         dfs(dep);
@@ -104,7 +109,9 @@ export function hasCircularDependency(
 /**
  * Get all models that are involved in any circular dependency
  */
-export function getModelsInCircularDeps(circularDeps: CircularDependencySet): Set<string> {
+export function getModelsInCircularDeps(
+  circularDeps: CircularDependencySet,
+): Set<string> {
   const models = new Set<string>();
   for (const pair of circularDeps) {
     const [a, b] = pair.split(':');

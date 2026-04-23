@@ -1,13 +1,15 @@
 import getRelativePath from 'get-relative-path';
 
-export function relativePath(from: string, to: string) {
-  if (!from.startsWith('/')) {
-    from = `/${from}`;
+export function relativePath(from: string, to: string): string {
+  let fromPath = from;
+  let toPath = to;
+  if (!fromPath.startsWith('/')) {
+    fromPath = `/${fromPath}`;
   }
-  if (!to.startsWith('/')) {
-    to = `/${to}`;
+  if (!toPath.startsWith('/')) {
+    toPath = `/${toPath}`;
   }
-  let result = getRelativePath(from, to);
+  let result = getRelativePath(fromPath, toPath);
   if (!result.startsWith('.')) {
     result = `./${result}`;
   }

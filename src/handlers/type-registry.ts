@@ -1,5 +1,3 @@
-import { StructureKind } from 'ts-morph';
-
 import type { EventArguments } from '../types.js';
 
 /**
@@ -20,13 +18,11 @@ export function generateTypeRegistry(args: EventArguments): void {
     return;
   }
 
-  const rootDirectory = project.getDirectory(output) || project.createDirectory(output);
+  const rootDirectory = project.getDirectory(output) ?? project.createDirectory(output);
 
-  const sourceFile = rootDirectory.createSourceFile(
-    'type-registry.ts',
-    undefined,
-    { overwrite: true },
-  );
+  const sourceFile = rootDirectory.createSourceFile('type-registry.ts', undefined, {
+    overwrite: true,
+  });
 
   // Generate a comprehensive type registry with error handling and forwardRef support
   const registryCode = `/**

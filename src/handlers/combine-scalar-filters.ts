@@ -1,7 +1,8 @@
+import type { EventArguments, EventEmitter, InputType, SchemaArg } from '../types.js';
+
 import { cloneDeep, keyBy, remove } from 'lodash-es';
 
 import { BeforeGenerateField } from '../event-names.js';
-import type { EventArguments, EventEmitter, InputType, SchemaArg } from '../types.js';
 
 /**
  * Subscribes on 'BeforeInputType'
@@ -32,7 +33,7 @@ function beforeGenerateField(field: SchemaArg): void {
     if (fieldInput.location !== 'inputObjectTypes') {
       continue;
     }
-    const fieldInputType = String(fieldInput.type);
+    const fieldInputType = fieldInput.type;
     if (isContainBogus(fieldInputType)) {
       fieldInput.type = replaceBogus(fieldInputType);
     }
@@ -87,7 +88,10 @@ function postBegin(args: EventArguments): void {
   }
 
   const inputTypeByName = keyBy(inputTypes, it => it.name);
-  const replaceBogusFilters = (filterName: string, filterNameCandidates: string[]): void => {
+  const replaceBogusFilters = (
+    filterName: string,
+    filterNameCandidates: string[],
+  ): void => {
     for (const filterNameCandidate of filterNameCandidates) {
       const candidate = inputTypeByName[filterNameCandidate];
       if (candidate as InputType | undefined) {

@@ -8,15 +8,13 @@ import type { EventArguments } from '../types.js';
  * incompatible with Prisma 7's new client structure.
  */
 export function generateDecimalHelpers(args: EventArguments): void {
-  const { config, output, project } = args;
+  const { output, project } = args;
 
-  const rootDirectory = project.getDirectory(output) || project.createDirectory(output);
+  const rootDirectory = project.getDirectory(output) ?? project.createDirectory(output);
 
-  const sourceFile = rootDirectory.createSourceFile(
-    'decimal-helpers.ts',
-    undefined,
-    { overwrite: true },
-  );
+  const sourceFile = rootDirectory.createSourceFile('decimal-helpers.ts', undefined, {
+    overwrite: true,
+  });
 
   // Generate decimal helper functions using decimal.js
   const helpersCode = `/**

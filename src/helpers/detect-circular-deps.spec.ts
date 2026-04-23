@@ -1,6 +1,12 @@
-import { describe, it, expect } from 'vitest';
-import { buildDependencyGraph, detectCircularDependencies, hasCircularDependency } from './detect-circular-deps.js';
 import type { Model } from '../types.js';
+
+import { describe, expect, it } from 'vitest';
+
+import {
+  buildDependencyGraph,
+  detectCircularDependencies,
+  hasCircularDependency,
+} from './detect-circular-deps.js';
 
 describe('detect-circular-deps', () => {
   describe('buildDependencyGraph', () => {
@@ -12,18 +18,58 @@ describe('detect-circular-deps', () => {
     it('should build graph with model dependencies', () => {
       const models: Model[] = [
         {
-          name: 'User',
           fields: [
-            { name: 'id', type: 'String', kind: 'scalar', isRequired: true, isList: false, isUnique: false, isId: true, isReadOnly: false, hasDefaultValue: false },
-            { name: 'posts', type: 'Post', kind: 'object', isRequired: true, isList: true, isUnique: false, isId: false, isReadOnly: false, hasDefaultValue: false },
+            {
+              hasDefaultValue: false,
+              isId: true,
+              isList: false,
+              isReadOnly: false,
+              isRequired: true,
+              isUnique: false,
+              kind: 'scalar',
+              name: 'id',
+              type: 'String',
+            },
+            {
+              hasDefaultValue: false,
+              isId: false,
+              isList: true,
+              isReadOnly: false,
+              isRequired: true,
+              isUnique: false,
+              kind: 'object',
+              name: 'posts',
+              type: 'Post',
+            },
           ],
+          name: 'User',
         },
         {
-          name: 'Post',
           fields: [
-            { name: 'id', type: 'String', kind: 'scalar', isRequired: true, isList: false, isUnique: false, isId: true, isReadOnly: false, hasDefaultValue: false },
-            { name: 'author', type: 'User', kind: 'object', isRequired: true, isList: false, isUnique: false, isId: false, isReadOnly: false, hasDefaultValue: false },
+            {
+              hasDefaultValue: false,
+              isId: true,
+              isList: false,
+              isReadOnly: false,
+              isRequired: true,
+              isUnique: false,
+              kind: 'scalar',
+              name: 'id',
+              type: 'String',
+            },
+            {
+              hasDefaultValue: false,
+              isId: false,
+              isList: false,
+              isReadOnly: false,
+              isRequired: true,
+              isUnique: false,
+              kind: 'object',
+              name: 'author',
+              type: 'User',
+            },
           ],
+          name: 'Post',
         },
       ] as unknown as Model[];
 
@@ -38,16 +84,36 @@ describe('detect-circular-deps', () => {
     it('should detect circular dependency between two models', () => {
       const models: Model[] = [
         {
-          name: 'User',
           fields: [
-            { name: 'posts', type: 'Post', kind: 'object', isRequired: true, isList: true, isUnique: false, isId: false, isReadOnly: false, hasDefaultValue: false },
+            {
+              hasDefaultValue: false,
+              isId: false,
+              isList: true,
+              isReadOnly: false,
+              isRequired: true,
+              isUnique: false,
+              kind: 'object',
+              name: 'posts',
+              type: 'Post',
+            },
           ],
+          name: 'User',
         },
         {
-          name: 'Post',
           fields: [
-            { name: 'author', type: 'User', kind: 'object', isRequired: true, isList: false, isUnique: false, isId: false, isReadOnly: false, hasDefaultValue: false },
+            {
+              hasDefaultValue: false,
+              isId: false,
+              isList: false,
+              isReadOnly: false,
+              isRequired: true,
+              isUnique: false,
+              kind: 'object',
+              name: 'author',
+              type: 'User',
+            },
           ],
+          name: 'Post',
         },
       ] as unknown as Model[];
 
@@ -61,16 +127,36 @@ describe('detect-circular-deps', () => {
     it('should not detect circular dependency for non-circular models', () => {
       const models: Model[] = [
         {
-          name: 'User',
           fields: [
-            { name: 'id', type: 'String', kind: 'scalar', isRequired: true, isList: false, isUnique: false, isId: true, isReadOnly: false, hasDefaultValue: false },
+            {
+              hasDefaultValue: false,
+              isId: true,
+              isList: false,
+              isReadOnly: false,
+              isRequired: true,
+              isUnique: false,
+              kind: 'scalar',
+              name: 'id',
+              type: 'String',
+            },
           ],
+          name: 'User',
         },
         {
-          name: 'Post',
           fields: [
-            { name: 'author', type: 'User', kind: 'object', isRequired: true, isList: false, isUnique: false, isId: false, isReadOnly: false, hasDefaultValue: false },
+            {
+              hasDefaultValue: false,
+              isId: false,
+              isList: false,
+              isReadOnly: false,
+              isRequired: true,
+              isUnique: false,
+              kind: 'object',
+              name: 'author',
+              type: 'User',
+            },
           ],
+          name: 'Post',
         },
       ] as unknown as Model[];
 

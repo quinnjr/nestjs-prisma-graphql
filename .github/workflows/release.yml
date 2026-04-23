@@ -81,7 +81,7 @@ jobs:
           npm version ${{ needs.validate.outputs.version }} --no-git-tag-version
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: release-dist
           path: |
@@ -109,7 +109,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-dist
 
@@ -138,7 +138,7 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-dist
 
@@ -159,7 +159,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-dist
           path: release-artifacts/

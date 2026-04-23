@@ -1,6 +1,6 @@
 import type { FieldLocation } from '../types.js';
 
-export function fileTypeByLocation(fieldLocation: FieldLocation) {
+export function fileTypeByLocation(fieldLocation: FieldLocation): string {
   switch (fieldLocation) {
     case 'inputObjectTypes': {
       return 'input';
@@ -11,6 +11,10 @@ export function fileTypeByLocation(fieldLocation: FieldLocation) {
     case 'enumTypes': {
       return 'enum';
     }
+    case 'fieldRefTypes':
+    case 'scalar':
+    default: {
+      return 'object';
+    }
   }
-  return 'object';
 }

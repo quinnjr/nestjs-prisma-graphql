@@ -1,7 +1,8 @@
+import type { FieldLocation } from '../types.js';
+
 import { describe, expect, it } from 'vitest';
 
 import { fileTypeByLocation } from './file-type-by-location.js';
-import type { FieldLocation } from '../types.js';
 
 describe('fileTypeByLocation', () => {
   it('should return "input" for inputObjectTypes', () => {
@@ -21,7 +22,7 @@ describe('fileTypeByLocation', () => {
   });
 
   it('should return "object" for fieldRefTypes', () => {
-    expect(fileTypeByLocation('fieldRefTypes' as FieldLocation)).toBe('object');
+    expect(fileTypeByLocation('fieldRefTypes')).toBe('object');
   });
 
   it('should return "object" for unknown location', () => {

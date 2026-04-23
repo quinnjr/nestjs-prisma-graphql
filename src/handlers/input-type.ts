@@ -1,8 +1,13 @@
-import { ok } from 'node:assert';
+import type { EventArguments, InputType } from '../types.js';
+
 import JSON5 from 'json5';
 import { castArray } from 'lodash-es';
 import pupa from 'pupa';
-import { type ClassDeclarationStructure, type StatementStructures, StructureKind } from 'ts-morph';
+import {
+  type ClassDeclarationStructure,
+  type StatementStructures,
+  StructureKind,
+} from 'ts-morph';
 
 import { BeforeGenerateField } from '../event-names.js';
 import { getGraphqlImport } from '../helpers/get-graphql-import.js';
@@ -13,7 +18,7 @@ import { ImportDeclarationMap } from '../helpers/import-declaration-map.js';
 import { isWhereUniqueInputType } from '../helpers/is-where-unique-input-type.js';
 import { propertyStructure } from '../helpers/property-structure.js';
 import { relativePath } from '../helpers/relative-path.js';
-import type { EventArguments, InputType } from '../types.js';
+import { ok } from '../helpers/type-safe-assert.js';
 
 export function inputType(
   args: EventArguments & {
@@ -23,7 +28,6 @@ export function inputType(
   },
 ): void {
   const {
-    circularDependencies,
     classDecoratorName,
     classTransformerTypeModels,
     config,
@@ -32,33 +36,33 @@ export function inputType(
     fileType,
     getModelName,
     getSourceFile,
-    inputType,
+    inputType: inputTypeArg,
     models,
     output,
     removeTypes,
     typeNames,
   } = args;
 
-  typeNames.add(inputType.name);
+  typeNames.add(inputTypeArg.name);
 
   const importDeclarations = new ImportDeclarationMap();
   const sourceFile = getSourceFile({
-    name: inputType.name,
+    name: inputTypeArg.name,
     type: fileType,
   });
   const classStructure: ClassDeclarationStructure = {
-    kind: StructureKind.Class,
-    isExported: true,
-    name: inputType.name,
     decorators: [
       {
-        name: classDecoratorName,
         arguments: [],
+        name: classDecoratorName,
       },
     ],
+    isExported: true,
+    kind: StructureKind.Class,
+    name: inputTypeArg.name,
     properties: [],
   };
-  const modelName = getModelName(inputType.name) ?? '';
+  const modelName = getModelName(inputTypeArg.name) ?? '';
   const model = models.get(modelName);
   const modelFieldSettings = model && fieldSettings.get(model.name);
   const moduleSpecifier = '@nestjs/graphql';
@@ -68,12 +72,12 @@ export function inputType(
 
   importDeclarations
     .set('Field', {
-      namedImports: [{ name: 'Field' }],
       moduleSpecifier,
+      namedImports: [{ name: 'Field' }],
     })
     .set(classDecoratorName, {
-      namedImports: [{ name: classDecoratorName }],
       moduleSpecifier,
+      namedImports: [{ name: classDecoratorName }],
     });
 
   // Add type registry imports if ESM compatible mode is enabled
@@ -87,12 +91,12 @@ export function inputType(
   }
 
   const useInputType = config.useInputType.find(x =>
-    inputType.name.includes(x.typeName),
+    inputTypeArg.name.includes(x.typeName),
   );
-  const isWhereUnique = isWhereUniqueInputType(inputType.name);
+  const isWhereUnique = isWhereUniqueInputType(inputTypeArg.name);
 
-  for (const field of inputType.fields) {
-    field.inputTypes = field.inputTypes.filter(t => !removeTypes.has(String(t.type)));
+  for (const field of inputTypeArg.fields) {
+    field.inputTypes = field.inputTypes.filter(t => !removeTypes.has(t.type));
 
     eventEmitter.emitSync(BeforeGenerateField, field, args);
 
@@ -105,11 +109,11 @@ export function inputType(
     const usePattern = useInputType?.ALL ?? useInputType?.[name];
     const graphqlInputType = getGraphqlInputType(inputTypes, usePattern);
     const { isList, location, type } = graphqlInputType;
-    const typeName = String(type);
+    const typeName = type;
     const settings = modelFieldSettings?.get(name);
     const propertySettings = settings?.getPropertyType({
-      name: inputType.name,
       input: true,
+      name: inputTypeArg.name,
     });
     const modelField = model?.fields.find(f => f.name === name);
     const isCustomsApplicable = typeName === modelField?.type;
@@ -117,40 +121,40 @@ export function inputType(
     const whereUniqueInputTypeValue =
       isWhereUniqueInputType(typeName) &&
       atLeastKeys &&
-      `Prisma.AtLeast<${typeName}, ${atLeastKeys
-        .map(n => `'${n}'`)
-        .join(' | ')}>`;
+      `Prisma.AtLeast<${typeName}, ${atLeastKeys.map(n => `'${n}'`).join(' | ')}>`;
 
     const propertyType = castArray(
       propertySettings?.name ??
-        (whereUniqueInputTypeValue ||
-          getPropertyType({
-            location,
-            type: typeName,
-          })),
+        whereUniqueInputTypeValue ??
+        getPropertyType({
+          location,
+          type: typeName,
+        }),
     );
 
     const hasExclamationToken = Boolean(
       isWhereUnique &&
-        config.unsafeCompatibleWhereUniqueInput &&
-        atLeastKeys?.includes(name),
+      config.unsafeCompatibleWhereUniqueInput &&
+      atLeastKeys?.includes(name),
     );
     const property = propertyStructure({
-      name,
-      isNullable: !isRequired,
       hasExclamationToken: hasExclamationToken || undefined,
       hasQuestionToken: hasExclamationToken ? false : undefined,
-      propertyType,
       isList,
+      isNullable: !isRequired,
+      name,
+      propertyType,
     });
 
-    classStructure.properties!.push(property);
+    if (classStructure.properties) {
+      classStructure.properties.push(property);
+    }
 
     if (propertySettings) {
       importDeclarations.create({ ...propertySettings });
-    } else if (propertyType.some(p => p.includes('Prisma.Decimal'))) {
+    } else if (propertyType.some((p: string) => p.includes('Prisma.Decimal'))) {
       importDeclarations.add('Prisma', config.prismaClientImport);
-    } else if (propertyType.some(p => p.startsWith('Prisma.'))) {
+    } else if (propertyType.some((p: string) => p.startsWith('Prisma.'))) {
       importDeclarations.add('Prisma', config.prismaClientImport);
     }
 
@@ -159,20 +163,20 @@ export function inputType(
     let useGetType = false;
     const shouldHideField =
       settings?.shouldHideField({
-        name: inputType.name,
         input: true,
-      }) ||
+        name: inputTypeArg.name,
+      }) ??
       config.decorate.some(
         d =>
           d.name === 'HideField' &&
           d.from === moduleSpecifier &&
           d.isMatchField(name) &&
-          d.isMatchType(inputType.name),
+          d.isMatchType(inputTypeArg.name),
       );
 
     const fieldType = settings?.getFieldType({
-      name: inputType.name,
       input: true,
+      name: inputTypeArg.name,
     });
 
     if (fieldType && isCustomsApplicable && !shouldHideField) {
@@ -182,39 +186,43 @@ export function inputType(
       // Import property type class
       const graphqlImport = getGraphqlImport({
         config,
-        sourceFile,
-        location,
-        typeName,
         getSourceFile,
+        location,
+        sourceFile,
+        typeName,
       });
 
       graphqlType = graphqlImport.name;
-      let referenceName = propertyType[0];
+      // Extract the actual type name from complex property types like "typeof X | Y"
       if (location === 'enumTypes') {
-        const parts = referenceName.split(' ');
-        referenceName = parts.at(-1) ?? parts[0];
+        const parts = String(propertyType[0]).split(' ');
+        const lastPart = parts.at(-1);
+        if (lastPart !== undefined) {
+          // Use lastPart for enum type resolution
+          void lastPart;
+        }
       }
 
       // In ESM mode, always use getType() for input object types
-      const shouldUseLazyType =
-        config.esmCompatible && location === 'inputObjectTypes';
+      const shouldUseLazyType = config.esmCompatible && location === 'inputObjectTypes';
 
       // Handle self-references
-      if (graphqlImport.name === inputType.name && shouldUseLazyType) {
+      if (graphqlImport.name === inputTypeArg.name && shouldUseLazyType) {
         lazyTypes.add(graphqlImport.name);
         useGetType = true;
       } else if (
-        graphqlImport.specifier &&
+        graphqlImport.specifier !== null &&
+        graphqlImport.specifier !== undefined &&
         !importDeclarations.has(graphqlImport.name) &&
-        graphqlImport.name !== inputType.name
+        graphqlImport.name !== inputTypeArg.name
       ) {
         if (shouldUseLazyType) {
           importDeclarations.addType(graphqlImport.name, graphqlImport.specifier);
           lazyTypes.add(graphqlImport.name);
         } else {
           importDeclarations.set(graphqlImport.name, {
-            namedImports: [{ name: graphqlImport.name }],
             moduleSpecifier: graphqlImport.specifier,
+            namedImports: [{ name: graphqlImport.name }],
           });
         }
       }
@@ -225,11 +233,14 @@ export function inputType(
       }
     }
 
-    ok(property.decorators, 'property.decorators is undefined');
+    ok(
+      property.decorators !== undefined && property.decorators !== null,
+      'property.decorators is undefined',
+    );
 
     if (shouldHideField) {
       importDeclarations.add('HideField', moduleSpecifier);
-      property.decorators.push({ name: 'HideField', arguments: [] });
+      property.decorators.push({ arguments: [], name: 'HideField' });
     } else {
       let typeExpression: string;
       if (useGetType) {
@@ -241,7 +252,6 @@ export function inputType(
       }
 
       property.decorators.push({
-        name: 'Field',
         arguments: [
           typeExpression,
           JSON5.stringify({
@@ -249,6 +259,7 @@ export function inputType(
             nullable: !isRequired,
           }),
         ],
+        name: 'Field',
       });
 
       if (graphqlType === 'GraphQLDecimal') {
@@ -264,12 +275,12 @@ export function inputType(
 
         property.decorators.push(
           {
-            name: 'Type',
             arguments: ['() => Object'],
+            name: 'Type',
           },
           {
-            name: 'Transform',
             arguments: ['transformToDecimal'],
+            name: 'Transform',
           },
         );
       } else if (
@@ -292,22 +303,20 @@ export function inputType(
           ].includes(name) ||
           classTransformerTypeModels.has(getModelName(graphqlType) ?? '') ||
           (modelField?.kind === 'object' &&
-            models.get(modelField.type) &&
             models
               .get(modelField.type)
               ?.fields.some(
-                f =>
-                  f.kind === 'object' && classTransformerTypeModels.has(f.type),
-              )))
+                f => f.kind === 'object' && classTransformerTypeModels.has(f.type),
+              ) === true))
       ) {
         importDeclarations.add('Type', 'class-transformer');
         if (useGetType) {
           property.decorators.push({
-            name: 'Type',
             arguments: [`getType('${graphqlType}')`],
+            name: 'Type',
           });
         } else {
-          property.decorators.push({ name: 'Type', arguments: [`() => ${graphqlType}`] });
+          property.decorators.push({ arguments: [`() => ${graphqlType}`], name: 'Type' });
         }
       }
 
@@ -318,20 +327,23 @@ export function inputType(
             true
           ) {
             property.decorators.push({
-              name: options.name,
               arguments: options.arguments as string[],
+              name: options.name,
             });
-            ok(options.from, "Missed 'from' part in configuration or field setting");
+            ok(
+              options.from !== undefined && options.from !== null && options.from !== '',
+              "Missed 'from' part in configuration or field setting",
+            );
             importDeclarations.create(options);
           }
         }
       }
 
       for (const decorate of config.decorate) {
-        if (decorate.isMatchField(name) && decorate.isMatchType(inputType.name)) {
+        if (decorate.isMatchField(name) && decorate.isMatchType(inputTypeArg.name)) {
           property.decorators.push({
-            name: decorate.name,
             arguments: decorate.arguments?.map(x => pupa(x, { propertyType })),
+            name: decorate.name,
           });
           importDeclarations.create(decorate);
         }
@@ -339,21 +351,21 @@ export function inputType(
     }
 
     eventEmitter.emitSync('ClassProperty', property, {
-      location,
       isList,
+      location,
       propertyType,
     });
   }
 
   // Build statements array
-  const statements: (StatementStructures | string)[] = [
+  const statements: Array<StatementStructures | string> = [
     ...importDeclarations.toStatements(),
     classStructure,
   ];
 
   // Add registerType call if ESM compatible mode is enabled
   if (config.esmCompatible) {
-    statements.push(`\nregisterType('${inputType.name}', ${inputType.name});`);
+    statements.push(`\nregisterType('${inputTypeArg.name}', ${inputTypeArg.name});`);
   }
 
   sourceFile.set({

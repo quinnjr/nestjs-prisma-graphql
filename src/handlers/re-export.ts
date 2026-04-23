@@ -1,11 +1,11 @@
+import type { EventArguments, EventEmitter } from '../types.js';
+
 import {
   type Directory,
   type ExportDeclarationStructure,
   type SourceFile,
   StructureKind,
 } from 'ts-morph';
-
-import type { EventArguments, EventEmitter } from '../types.js';
 
 export enum ReExport {
   None = 'None',
@@ -19,13 +19,14 @@ export function reExport(emitter: EventEmitter): void {
 }
 
 function beforeGenerateFiles(args: EventArguments): void {
-  const { project, output, config } = args;
+  const { config, output, project } = args;
   const rootDirectory = project.getDirectoryOrThrow(output);
 
   if ([ReExport.Directories, ReExport.All].includes(config.reExport)) {
     // Collect all directories first to avoid iteration issues during file creation
     const directories = [...rootDirectory.getDescendantDirectories()];
-    const indexFiles: Array<{ path: string; statements: ExportDeclarationStructure[] }> = [];
+    const indexFiles: Array<{ path: string; statements: ExportDeclarationStructure[] }> =
+      [];
 
     for (const directory of directories) {
       const sourceFiles = directory
@@ -81,7 +82,9 @@ function beforeGenerateFiles(args: EventArguments): void {
     const directories = rootDirectory.getDirectories();
 
     for (const directory of directories) {
-      if (directory.getBaseName() === 'node_modules') continue;
+      if (directory.getBaseName() === 'node_modules') {
+        continue;
+      }
       const indexFile = directory.getSourceFile('index.ts');
       if (indexFile) {
         // For ESM, we need to explicitly reference the index.js file
@@ -110,9 +113,9 @@ function getExportDeclaration(
   // For ESM, ensure module specifiers have .js extension
   let moduleSpecifier = directory.getRelativePathAsModuleSpecifierTo(sourceFile);
   if (!moduleSpecifier.endsWith('.js') && !moduleSpecifier.endsWith('.ts')) {
-    moduleSpecifier = moduleSpecifier + '.js';
+    moduleSpecifier += '.js';
   } else if (moduleSpecifier.endsWith('.ts')) {
-    moduleSpecifier = moduleSpecifier.slice(0, -3) + '.js';
+    moduleSpecifier = `${moduleSpecifier.slice(0, -3)}.js`;
   }
 
   // Use namespace exports (export * from) instead of named exports
@@ -129,7 +132,7 @@ function getNamespaceExportDeclaration(
 ): ExportDeclarationStructure {
   let moduleSpecifier = directory.getRelativePathAsModuleSpecifierTo(sourceDirectory);
   if (!moduleSpecifier.endsWith('/index.js')) {
-    moduleSpecifier = moduleSpecifier + '/index.js';
+    moduleSpecifier += '/index.js';
   }
 
   return {

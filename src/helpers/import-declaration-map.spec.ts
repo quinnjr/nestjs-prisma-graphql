@@ -68,7 +68,7 @@ describe('ImportDeclarationMap', () => {
   describe('create method', () => {
     it('should create named import', () => {
       const map = new ImportDeclarationMap();
-      map.create({ name: 'Field', from: '@nestjs/graphql' });
+      map.create({ from: '@nestjs/graphql', name: 'Field' });
 
       expect(map.has('Field')).toBe(true);
       const imp = map.get('Field');
@@ -77,7 +77,7 @@ describe('ImportDeclarationMap', () => {
 
     it('should create default import', () => {
       const map = new ImportDeclarationMap();
-      map.create({ name: 'lodash', from: 'lodash-es', defaultImport: true });
+      map.create({ defaultImport: true, from: 'lodash-es', name: 'lodash' });
 
       expect(map.has('lodash')).toBe(true);
       expect(map.get('lodash')?.defaultImport).toBe('lodash');
@@ -85,7 +85,7 @@ describe('ImportDeclarationMap', () => {
 
     it('should create default import with custom name', () => {
       const map = new ImportDeclarationMap();
-      map.create({ name: 'pkg', from: 'some-pkg', defaultImport: 'SomePkg' });
+      map.create({ defaultImport: 'SomePkg', from: 'some-pkg', name: 'pkg' });
 
       expect(map.has('SomePkg')).toBe(true);
       expect(map.get('SomePkg')?.defaultImport).toBe('SomePkg');
@@ -93,7 +93,7 @@ describe('ImportDeclarationMap', () => {
 
     it('should create namespace import', () => {
       const map = new ImportDeclarationMap();
-      map.create({ name: 'utils', from: './utils', namespaceImport: 'Utils' });
+      map.create({ from: './utils', name: 'utils', namespaceImport: 'Utils' });
 
       expect(map.has('Utils')).toBe(true);
       expect(map.get('Utils')?.namespaceImport).toBe('Utils');
@@ -101,7 +101,7 @@ describe('ImportDeclarationMap', () => {
 
     it('should create type-only import', () => {
       const map = new ImportDeclarationMap();
-      map.create({ name: 'User', from: './user', isTypeOnly: true });
+      map.create({ from: './user', isTypeOnly: true, name: 'User' });
 
       expect(map.has('type:User')).toBe(true);
       expect(map.get('type:User')?.isTypeOnly).toBe(true);
@@ -110,10 +110,10 @@ describe('ImportDeclarationMap', () => {
     it('should handle namedImport with namespaceImport', () => {
       const map = new ImportDeclarationMap();
       map.create({
-        name: 'utils',
         from: './utils',
-        namespaceImport: 'Utils',
+        name: 'utils',
         namedImport: true,
+        namespaceImport: 'Utils',
       });
 
       expect(map.has('Utils')).toBe(true);
@@ -123,8 +123,8 @@ describe('ImportDeclarationMap', () => {
 
     it('should not overwrite existing import', () => {
       const map = new ImportDeclarationMap();
-      map.create({ name: 'Field', from: '@nestjs/graphql' });
-      map.create({ name: 'Field', from: 'other-module' });
+      map.create({ from: '@nestjs/graphql', name: 'Field' });
+      map.create({ from: 'other-module', name: 'Field' });
 
       expect(map.get('Field')?.moduleSpecifier).toBe('@nestjs/graphql');
     });

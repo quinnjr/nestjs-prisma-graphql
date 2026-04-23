@@ -1,67 +1,58 @@
+import type { FieldLocation } from '../types.js';
+
 import { describe, expect, it } from 'vitest';
 
 import { getPropertyType } from './get-property-type.js';
-import type { FieldLocation } from '../types.js';
 
 describe('getPropertyType', () => {
   describe('scalar types', () => {
     it('should return number for Float', () => {
-      expect(getPropertyType({ type: 'Float', location: 'scalar' })).toEqual([
-        'number',
-      ]);
+      expect(getPropertyType({ location: 'scalar', type: 'Float' })).toEqual(['number']);
     });
 
     it('should return number for Int', () => {
-      expect(getPropertyType({ type: 'Int', location: 'scalar' })).toEqual([
-        'number',
-      ]);
+      expect(getPropertyType({ location: 'scalar', type: 'Int' })).toEqual(['number']);
     });
 
     it('should return string for String', () => {
-      expect(getPropertyType({ type: 'String', location: 'scalar' })).toEqual([
-        'string',
-      ]);
+      expect(getPropertyType({ location: 'scalar', type: 'String' })).toEqual(['string']);
     });
 
     it('should return boolean for Boolean', () => {
-      expect(getPropertyType({ type: 'Boolean', location: 'scalar' })).toEqual([
+      expect(getPropertyType({ location: 'scalar', type: 'Boolean' })).toEqual([
         'boolean',
       ]);
     });
 
     it('should return Date and string for DateTime', () => {
-      expect(getPropertyType({ type: 'DateTime', location: 'scalar' })).toEqual([
+      expect(getPropertyType({ location: 'scalar', type: 'DateTime' })).toEqual([
         'Date',
         'string',
       ]);
     });
 
     it('should return Prisma.Decimal for Decimal', () => {
-      expect(getPropertyType({ type: 'Decimal', location: 'scalar' })).toEqual([
+      expect(getPropertyType({ location: 'scalar', type: 'Decimal' })).toEqual([
         'Prisma.Decimal',
       ]);
     });
 
     it('should return any for Json', () => {
-      expect(getPropertyType({ type: 'Json', location: 'scalar' })).toEqual([
-        'any',
-      ]);
+      expect(getPropertyType({ location: 'scalar', type: 'Json' })).toEqual(['any']);
     });
 
     it('should return null for Null', () => {
-      expect(getPropertyType({ type: 'Null', location: 'scalar' })).toEqual([
-        'null',
-      ]);
+      expect(getPropertyType({ location: 'scalar', type: 'Null' })).toEqual(['null']);
     });
 
     it('should return Uint8Array for Bytes', () => {
-      expect(getPropertyType({ type: 'Bytes', location: 'scalar' })).toEqual([
+      expect(getPropertyType({ location: 'scalar', type: 'Bytes' })).toEqual([
         'Uint8Array',
       ]);
     });
 
     it('should return bigint and number for BigInt', () => {
-      expect(getPropertyType({ type: 'BigInt', location: 'scalar' })).toEqual([
+      expect(getPropertyType({ location: 'scalar', type: 'BigInt' })).toEqual([
         'bigint',
         'number',
       ]);
@@ -71,29 +62,29 @@ describe('getPropertyType', () => {
   describe('inputObjectTypes location', () => {
     it('should return the type name directly', () => {
       expect(
-        getPropertyType({ type: 'UserCreateInput', location: 'inputObjectTypes' }),
+        getPropertyType({ location: 'inputObjectTypes', type: 'UserCreateInput' }),
       ).toEqual(['UserCreateInput']);
     });
 
     it('should return custom type name', () => {
       expect(
-        getPropertyType({ type: 'PostWhereInput', location: 'inputObjectTypes' }),
+        getPropertyType({ location: 'inputObjectTypes', type: 'PostWhereInput' }),
       ).toEqual(['PostWhereInput']);
     });
   });
 
   describe('outputObjectTypes location', () => {
     it('should return the type name directly', () => {
-      expect(
-        getPropertyType({ type: 'User', location: 'outputObjectTypes' }),
-      ).toEqual(['User']);
+      expect(getPropertyType({ location: 'outputObjectTypes', type: 'User' })).toEqual([
+        'User',
+      ]);
     });
 
     it('should return custom output type name', () => {
       expect(
         getPropertyType({
-          type: 'AggregateUser',
           location: 'outputObjectTypes',
+          type: 'AggregateUser',
         }),
       ).toEqual(['AggregateUser']);
     });
@@ -101,23 +92,25 @@ describe('getPropertyType', () => {
 
   describe('enumTypes location', () => {
     it('should return template literal type for enum', () => {
-      expect(getPropertyType({ type: 'Role', location: 'enumTypes' })).toEqual([
+      expect(getPropertyType({ location: 'enumTypes', type: 'Role' })).toEqual([
+        // eslint-disable-next-line no-template-curly-in-string
         '`${Role}`',
       ]);
     });
 
     it('should return template literal type for custom enum', () => {
       expect(
-        getPropertyType({ type: 'UserStatus', location: 'enumTypes' }),
+        getPropertyType({ location: 'enumTypes', type: 'UserStatus' }),
+        // eslint-disable-next-line no-template-curly-in-string
       ).toEqual(['`${UserStatus}`']);
     });
   });
 
   describe('scalar location with custom types', () => {
     it('should return the type as-is for unknown scalar types', () => {
-      expect(
-        getPropertyType({ type: 'CustomScalar', location: 'scalar' }),
-      ).toEqual(['CustomScalar']);
+      expect(getPropertyType({ location: 'scalar', type: 'CustomScalar' })).toEqual([
+        'CustomScalar',
+      ]);
     });
   });
 
@@ -125,8 +118,8 @@ describe('getPropertyType', () => {
     it('should return unknown for unhandled locations', () => {
       expect(
         getPropertyType({
-          type: 'Something',
           location: 'unknown' as FieldLocation,
+          type: 'Something',
         }),
       ).toEqual(['unknown']);
     });
@@ -136,8 +129,8 @@ describe('getPropertyType', () => {
     it('should return unknown for fieldRefTypes', () => {
       expect(
         getPropertyType({
+          location: 'fieldRefTypes',
           type: 'StringFieldRefInput',
-          location: 'fieldRefTypes' as FieldLocation,
         }),
       ).toEqual(['unknown']);
     });

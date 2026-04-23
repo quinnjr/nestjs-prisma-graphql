@@ -1,14 +1,15 @@
-import { createObjectSettings, ObjectSettings } from '../helpers/object-settings.js';
 import type { EventArguments, Field, Model } from '../types.js';
+
+import { createObjectSettings, type ObjectSettings } from '../helpers/object-settings.js';
 
 export function modelData(model: Model, args: EventArguments): void {
   const {
+    classTransformerTypeModels,
     config,
+    fieldSettings,
+    modelFields,
     modelNames,
     models,
-    modelFields,
-    fieldSettings,
-    classTransformerTypeModels,
   } = args;
 
   modelNames.push(model.name);
@@ -21,10 +22,14 @@ export function modelData(model: Model, args: EventArguments): void {
   fieldSettings.set(model.name, fieldSettingsValue);
 
   for (const field of model.fields) {
-    if (field.documentation) {
+    if (
+      field.documentation !== null &&
+      field.documentation !== undefined &&
+      field.documentation.length > 0
+    ) {
       const { documentation, settings } = createObjectSettings({
-        text: field.documentation,
         config,
+        text: field.documentation,
       });
       field.documentation = documentation;
       fieldSettingsValue.set(field.name, settings);

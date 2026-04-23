@@ -1,13 +1,14 @@
+import type { DMMF } from '../types.js';
+
 import { describe, expect, it } from 'vitest';
 
 import { getGraphqlInputType } from './get-graphql-input-type.js';
-import type { DMMF } from '../types.js';
 
 describe('getGraphqlInputType', () => {
   describe('single input type', () => {
     it('should return the only input type', () => {
       const inputTypes: DMMF.InputTypeRef[] = [
-        { type: 'String', location: 'scalar', isList: false },
+        { isList: false, location: 'scalar', type: 'String' },
       ];
 
       const result = getGraphqlInputType(inputTypes);
@@ -19,8 +20,8 @@ describe('getGraphqlInputType', () => {
   describe('filtering null types', () => {
     it('should filter out null type', () => {
       const inputTypes: DMMF.InputTypeRef[] = [
-        { type: 'null', location: 'scalar', isList: false },
-        { type: 'String', location: 'scalar', isList: false },
+        { isList: false, location: 'scalar', type: 'null' },
+        { isList: false, location: 'scalar', type: 'String' },
       ];
 
       const result = getGraphqlInputType(inputTypes);
@@ -30,8 +31,8 @@ describe('getGraphqlInputType', () => {
 
     it('should filter out Null type', () => {
       const inputTypes: DMMF.InputTypeRef[] = [
-        { type: 'Null', location: 'scalar', isList: false },
-        { type: 'Int', location: 'scalar', isList: false },
+        { isList: false, location: 'scalar', type: 'Null' },
+        { isList: false, location: 'scalar', type: 'Int' },
       ];
 
       const result = getGraphqlInputType(inputTypes);
@@ -43,8 +44,8 @@ describe('getGraphqlInputType', () => {
   describe('preferring list types', () => {
     it('should prefer list type when all same location', () => {
       const inputTypes: DMMF.InputTypeRef[] = [
-        { type: 'String', location: 'scalar', isList: false },
-        { type: 'String', location: 'scalar', isList: true },
+        { isList: false, location: 'scalar', type: 'String' },
+        { isList: true, location: 'scalar', type: 'String' },
       ];
 
       const result = getGraphqlInputType(inputTypes);
@@ -56,8 +57,8 @@ describe('getGraphqlInputType', () => {
   describe('pattern matching', () => {
     it('should find type by simple pattern', () => {
       const inputTypes: DMMF.InputTypeRef[] = [
-        { type: 'UserWhereInput', location: 'inputObjectTypes', isList: false },
-        { type: 'UserCreateInput', location: 'inputObjectTypes', isList: false },
+        { isList: false, location: 'inputObjectTypes', type: 'UserWhereInput' },
+        { isList: false, location: 'inputObjectTypes', type: 'UserCreateInput' },
       ];
 
       const result = getGraphqlInputType(inputTypes, 'Where');
@@ -67,8 +68,8 @@ describe('getGraphqlInputType', () => {
 
     it('should find type by matcher pattern', () => {
       const inputTypes: DMMF.InputTypeRef[] = [
-        { type: 'UserWhereInput', location: 'inputObjectTypes', isList: false },
-        { type: 'PostWhereInput', location: 'inputObjectTypes', isList: false },
+        { isList: false, location: 'inputObjectTypes', type: 'UserWhereInput' },
+        { isList: false, location: 'inputObjectTypes', type: 'PostWhereInput' },
       ];
 
       const result = getGraphqlInputType(inputTypes, 'matcher:User*');
@@ -78,8 +79,8 @@ describe('getGraphqlInputType', () => {
 
     it('should find type by match: prefix pattern', () => {
       const inputTypes: DMMF.InputTypeRef[] = [
-        { type: 'UserCreateInput', location: 'inputObjectTypes', isList: false },
-        { type: 'PostCreateInput', location: 'inputObjectTypes', isList: false },
+        { isList: false, location: 'inputObjectTypes', type: 'UserCreateInput' },
+        { isList: false, location: 'inputObjectTypes', type: 'PostCreateInput' },
       ];
 
       const result = getGraphqlInputType(inputTypes, 'match:*Create*');
@@ -91,8 +92,8 @@ describe('getGraphqlInputType', () => {
   describe('preferring inputObjectTypes', () => {
     it('should prefer inputObjectTypes location', () => {
       const inputTypes: DMMF.InputTypeRef[] = [
-        { type: 'String', location: 'scalar', isList: false },
-        { type: 'UserInput', location: 'inputObjectTypes', isList: false },
+        { isList: false, location: 'scalar', type: 'String' },
+        { isList: false, location: 'inputObjectTypes', type: 'UserInput' },
       ];
 
       const result = getGraphqlInputType(inputTypes);
@@ -105,8 +106,8 @@ describe('getGraphqlInputType', () => {
   describe('enum and scalar with Json', () => {
     it('should prefer Json scalar when both enum and scalar present', () => {
       const inputTypes: DMMF.InputTypeRef[] = [
-        { type: 'SomeEnum', location: 'enumTypes', isList: false },
-        { type: 'Json', location: 'scalar', isList: false },
+        { isList: false, location: 'enumTypes', type: 'SomeEnum' },
+        { isList: false, location: 'scalar', type: 'Json' },
       ];
 
       const result = getGraphqlInputType(inputTypes);
@@ -118,8 +119,8 @@ describe('getGraphqlInputType', () => {
   describe('fieldRefTypes handling', () => {
     it('should prefer scalar or enum over fieldRefTypes', () => {
       const inputTypes: DMMF.InputTypeRef[] = [
-        { type: 'StringFieldRef', location: 'fieldRefTypes', isList: false },
-        { type: 'String', location: 'scalar', isList: false },
+        { isList: false, location: 'fieldRefTypes', type: 'StringFieldRef' },
+        { isList: false, location: 'scalar', type: 'String' },
       ];
 
       const result = getGraphqlInputType(inputTypes);
@@ -129,8 +130,8 @@ describe('getGraphqlInputType', () => {
 
     it('should prefer list scalar over fieldRefTypes', () => {
       const inputTypes: DMMF.InputTypeRef[] = [
-        { type: 'StringFieldRef', location: 'fieldRefTypes', isList: false },
-        { type: 'String', location: 'scalar', isList: true },
+        { isList: false, location: 'fieldRefTypes', type: 'StringFieldRef' },
+        { isList: true, location: 'scalar', type: 'String' },
       ];
 
       const result = getGraphqlInputType(inputTypes);
@@ -140,8 +141,8 @@ describe('getGraphqlInputType', () => {
 
     it('should prefer enum over fieldRefTypes', () => {
       const inputTypes: DMMF.InputTypeRef[] = [
-        { type: 'EnumFieldRef', location: 'fieldRefTypes', isList: false },
-        { type: 'Role', location: 'enumTypes', isList: false },
+        { isList: false, location: 'fieldRefTypes', type: 'EnumFieldRef' },
+        { isList: false, location: 'enumTypes', type: 'Role' },
       ];
 
       const result = getGraphqlInputType(inputTypes);
@@ -153,8 +154,8 @@ describe('getGraphqlInputType', () => {
   describe('error handling', () => {
     it('should throw when no matching type found', () => {
       const inputTypes: DMMF.InputTypeRef[] = [
-        { type: 'StringFieldRef', location: 'fieldRefTypes', isList: false },
-        { type: 'IntFieldRef', location: 'fieldRefTypes', isList: false },
+        { isList: false, location: 'fieldRefTypes', type: 'StringFieldRef' },
+        { isList: false, location: 'fieldRefTypes', type: 'IntFieldRef' },
       ];
 
       expect(() => getGraphqlInputType(inputTypes)).toThrow(TypeError);
@@ -170,8 +171,8 @@ describe('getGraphqlInputType', () => {
   describe('deduplication', () => {
     it('should deduplicate identical input types', () => {
       const inputTypes: DMMF.InputTypeRef[] = [
-        { type: 'String', location: 'scalar', isList: false },
-        { type: 'String', location: 'scalar', isList: false },
+        { isList: false, location: 'scalar', type: 'String' },
+        { isList: false, location: 'scalar', type: 'String' },
       ];
 
       const result = getGraphqlInputType(inputTypes);

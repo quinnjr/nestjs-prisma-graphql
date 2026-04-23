@@ -1,6 +1,7 @@
+import type { EventArguments, InputType, SchemaField } from '../types.js';
+
 import { isManyAndReturnOutputType } from '../helpers/is-many-and-return.js';
 import { pascalCase } from '../helpers/pascal-case.js';
-import type { EventArguments, InputType, SchemaField } from '../types.js';
 
 /**
  * See https://github.com/prisma/prisma/blob/master/src/packages/client/src/generation/TSClient/Model.ts@getAggregationTypes
@@ -10,9 +11,11 @@ export function argsType(field: SchemaField, args: EventArguments): void {
   if (['queryRaw', 'executeRaw'].includes(field.name)) {
     return;
   }
-  if (isManyAndReturnOutputType(field.name)) return;
+  if (isManyAndReturnOutputType(field.name)) {
+    return;
+  }
 
-  const { eventEmitter, typeNames, getModelName } = args;
+  const { eventEmitter, getModelName, typeNames } = args;
   let className = pascalCase(`${field.name}Args`);
   const modelName = getModelName(className) ?? '';
 
@@ -29,8 +32,8 @@ export function argsType(field: SchemaField, args: EventArguments): void {
 
   const inputType: InputType = {
     constraints: { maxNumFields: null, minNumFields: null },
-    name: className,
     fields: [...field.args],
+    name: className,
   };
 
   if (
@@ -51,24 +54,24 @@ export function argsType(field: SchemaField, args: EventArguments): void {
       }
 
       inputType.fields.push({
-        name: `_${name.toLowerCase()}`,
-        isRequired: false,
-        isNullable: true,
         inputTypes: [
           {
+            isList: false,
             location: 'inputObjectTypes',
             type: `${modelName}${name}AggregateInput`,
-            isList: false,
           },
         ],
+        isNullable: true,
+        isRequired: false,
+        name: `_${name.toLowerCase()}`,
       });
     }
   }
 
   eventEmitter.emitSync('InputType', {
     ...args,
-    inputType,
-    fileType: 'args',
     classDecoratorName: 'ArgsType',
+    fileType: 'args',
+    inputType,
   });
 }

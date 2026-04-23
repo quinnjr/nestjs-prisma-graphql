@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { isGeneratorDisabled } from './index.js';
 
@@ -7,10 +7,10 @@ describe('isGeneratorDisabled', () => {
 
   beforeEach(() => {
     // Clean environment for each test
-    delete process.env['DISABLE_NESTJS_PRISMA_GRAPHQL'];
-    delete process.env['CI_SKIP_PRISMA_GRAPHQL'];
-    delete process.env['PRISMA_GENERATOR_SKIP'];
-    delete process.env['SKIP_PRISMA_GENERATE'];
+    delete process.env.DISABLE_NESTJS_PRISMA_GRAPHQL;
+    delete process.env.CI_SKIP_PRISMA_GRAPHQL;
+    delete process.env.PRISMA_GENERATOR_SKIP;
+    delete process.env.SKIP_PRISMA_GENERATE;
   });
 
   afterEach(() => {
@@ -75,7 +75,7 @@ describe('isGeneratorDisabled', () => {
     });
 
     it('should use process.env when env parameter is not provided', () => {
-      process.env['DISABLE_NESTJS_PRISMA_GRAPHQL'] = 'true';
+      process.env.DISABLE_NESTJS_PRISMA_GRAPHQL = 'true';
       const options = createMockOptions();
       expect(isGeneratorDisabled(options)).toBe(true);
     });
