@@ -2,7 +2,6 @@ import type { EventArguments, ObjectSettings, OutputType } from '../types.js';
 
 import JSON5 from 'json5';
 import { castArray } from 'lodash-es';
-import { ok } from 'node:assert';
 import { type ClassDeclarationStructure, StructureKind } from 'ts-morph';
 
 import { getEnumName } from '../helpers/get-enum-name.js';
@@ -11,6 +10,7 @@ import { getOutputTypeName } from '../helpers/get-output-type-name.js';
 import { getPropertyType } from '../helpers/get-property-type.js';
 import { ImportDeclarationMap } from '../helpers/import-declaration-map.js';
 import { propertyStructure } from '../helpers/property-structure.js';
+import { ok } from '../helpers/type-safe-assert.js';
 
 const nestjsGraphql = '@nestjs/graphql';
 

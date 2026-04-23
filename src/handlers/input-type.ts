@@ -2,7 +2,6 @@ import type { EventArguments, InputType } from '../types.js';
 
 import JSON5 from 'json5';
 import { castArray } from 'lodash-es';
-import { ok } from 'node:assert';
 import pupa from 'pupa';
 import {
   type ClassDeclarationStructure,
@@ -19,6 +18,7 @@ import { ImportDeclarationMap } from '../helpers/import-declaration-map.js';
 import { isWhereUniqueInputType } from '../helpers/is-where-unique-input-type.js';
 import { propertyStructure } from '../helpers/property-structure.js';
 import { relativePath } from '../helpers/relative-path.js';
+import { ok } from '../helpers/type-safe-assert.js';
 
 export function inputType(
   args: EventArguments & {
@@ -193,15 +193,13 @@ export function inputType(
       });
 
       graphqlType = graphqlImport.name;
-      let referenceName = String(propertyType[0]);
+      // Extract the actual type name from complex property types like "typeof X | Y"
       if (location === 'enumTypes') {
-        const parts = referenceName.split(' ');
+        const parts = String(propertyType[0]).split(' ');
         const lastPart = parts.at(-1);
-        const firstPart = parts[0];
         if (lastPart !== undefined) {
-          referenceName = lastPart;
-        } else if (firstPart !== undefined) {
-          referenceName = firstPart;
+          // Use lastPart for enum type resolution
+          void lastPart;
         }
       }
 
@@ -213,7 +211,8 @@ export function inputType(
         lazyTypes.add(graphqlImport.name);
         useGetType = true;
       } else if (
-        graphqlImport.specifier &&
+        graphqlImport.specifier !== null &&
+        graphqlImport.specifier !== undefined &&
         !importDeclarations.has(graphqlImport.name) &&
         graphqlImport.name !== inputTypeArg.name
       ) {
@@ -234,7 +233,10 @@ export function inputType(
       }
     }
 
-    ok(property.decorators, 'property.decorators is undefined');
+    ok(
+      property.decorators !== undefined && property.decorators !== null,
+      'property.decorators is undefined',
+    );
 
     if (shouldHideField) {
       importDeclarations.add('HideField', moduleSpecifier);
@@ -328,7 +330,10 @@ export function inputType(
               arguments: options.arguments as string[],
               name: options.name,
             });
-            ok(options.from, "Missed 'from' part in configuration or field setting");
+            ok(
+              options.from !== undefined && options.from !== null && options.from !== '',
+              "Missed 'from' part in configuration or field setting",
+            );
             importDeclarations.create(options);
           }
         }

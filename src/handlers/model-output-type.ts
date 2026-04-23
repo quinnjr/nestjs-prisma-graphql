@@ -3,7 +3,6 @@ import type { PlainObject } from 'simplytyped';
 
 import JSON5 from 'json5';
 import { castArray } from 'lodash-es';
-import { ok } from 'node:assert';
 import pupa from 'pupa';
 import {
   type ClassDeclarationStructure,
@@ -26,6 +25,7 @@ import {
 } from '../helpers/object-settings.js';
 import { propertyStructure } from '../helpers/property-structure.js';
 import { relativePath } from '../helpers/relative-path.js';
+import { ok } from '../helpers/type-safe-assert.js';
 
 const nestjsGraphql = '@nestjs/graphql';
 

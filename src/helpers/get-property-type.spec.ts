@@ -129,7 +129,7 @@ describe('getPropertyType', () => {
     it('should return unknown for fieldRefTypes', () => {
       expect(
         getPropertyType({
-          location: 'fieldRefTypes' as FieldLocation,
+          location: 'fieldRefTypes',
           type: 'StringFieldRefInput',
         }),
       ).toEqual(['unknown']);

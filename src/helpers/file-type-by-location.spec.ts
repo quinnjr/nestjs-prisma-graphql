@@ -22,7 +22,7 @@ describe('fileTypeByLocation', () => {
   });
 
   it('should return "object" for fieldRefTypes', () => {
-    expect(fileTypeByLocation('fieldRefTypes' as FieldLocation)).toBe('object');
+    expect(fileTypeByLocation('fieldRefTypes')).toBe('object');
   });
 
   it('should return "object" for unknown location', () => {

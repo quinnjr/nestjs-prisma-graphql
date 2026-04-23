@@ -54,10 +54,7 @@ export function createConfig(data: Record<string, unknown>): {
   unsafeCompatibleWhereUniqueInput: boolean;
   useInputType: ConfigInputItem[];
 } {
-  const config = merge({}, unflatten(data, { delimiter: '_' })) as Record<
-    string,
-    unknown
-  >;
+  const config = merge({}, unflatten(data, { delimiter: '_' }));
   const $warnings: string[] = [];
 
   const defaultPattern = `{model}/{name}.{type}.ts`;
@@ -191,7 +188,7 @@ export function createConfig(data: Record<string, unknown>): {
     prismaClientImport: createPrismaImport(config.prismaClientImport),
     purgeOutput: toBoolean(config.purgeOutput),
     reExport: (ReExport[String(config.reExport) as keyof typeof ReExport] ??
-      ReExport.None) as ReExport,
+      ReExport.None),
     requireSingleFieldsInWhereUniqueInput: toBoolean(
       config.requireSingleFieldsInWhereUniqueInput,
     ),

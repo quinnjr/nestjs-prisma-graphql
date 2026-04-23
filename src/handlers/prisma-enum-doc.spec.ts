@@ -104,7 +104,7 @@ describe('extractEnumValueDocs', () => {
         { documentation: undefined, name: 'UNDEFINED_DOC' },
       ];
 
-      const result = extractEnumValueDocs(values as any);
+      const result = extractEnumValueDocs(values);
 
       expect(Object.keys(result)).toHaveLength(1);
       expect(result.STRING_DOC).toEqual({ description: 'String documentation' });

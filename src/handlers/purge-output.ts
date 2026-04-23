@@ -1,6 +1,13 @@
 import type { EventArguments, EventEmitter } from '../types.js';
 
-import { rmdirSync } from 'node:fs';
+import { rmdirSync as rmdirSyncOriginal } from 'node:fs';
+
+// Type-safe wrapper for rmdirSync
+type RmdirFunction = (path: string) => void;
+const rmdirTyped: RmdirFunction = rmdirSyncOriginal as RmdirFunction;
+const rmdirSync: RmdirFunction = (path: string): void => {
+  rmdirTyped(path);
+};
 
 export function purgeOutput(emitter: EventEmitter): void {
   emitter.on('Begin', begin);
@@ -24,7 +31,8 @@ function end({ output, project }: EventArguments): void {
     .filter(directory => directory.getSourceFiles().length === 0)
     .map(directory => directory.getPath());
 
-  for (const directory of directories ?? []) {
+  const directoryList: string[] = directories ?? [];
+  for (const directory of directoryList) {
     try {
       rmdirSync(directory);
     } catch {

@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions, @typescript-eslint/no-non-null-assertion, @typescript-eslint/switch-exhaustiveness-check, @typescript-eslint/no-base-to-string, max-lines-per-function */
+/* eslint-disable @typescript-eslint/strict-boolean-expressions, @typescript-eslint/switch-exhaustiveness-check, @typescript-eslint/no-base-to-string, max-lines-per-function */
 import type { EventArguments } from '../types.js';
 
-import { ok } from 'node:assert';
 import {
   type ClassDeclarationStructure,
   type ImportSpecifierStructure,
@@ -10,6 +9,7 @@ import {
 } from 'ts-morph';
 
 import { ImportDeclarationMap } from '../helpers/import-declaration-map.js';
+import { ok } from '../helpers/type-safe-assert.js';
 
 export async function generateFiles(args: EventArguments): Promise<void> {
   const { config, eventEmitter, output, project } = args;
@@ -40,8 +40,8 @@ export async function generateFiles(args: EventArguments): Promise<void> {
                 ?.getDecorator(decorator.name)
                 ?.getFullName();
               ok(
-                fullName,
-                `Cannot get full name of decorator of class ${statement.name!}`,
+                fullName !== undefined,
+                `Cannot get full name of decorator of class ${String(statement.name)}`,
               );
               decorator.name = fullName;
             }
@@ -111,8 +111,12 @@ export async function generateFiles(args: EventArguments): Promise<void> {
 
   const sourceFiles = project.getSourceFiles();
   const sourceFileCount = sourceFiles.length;
-  // eslint-disable-next-line no-console
-  console.log(
+  // Type-safe console logging
+  const logMessage = (msg: string): void => {
+    // eslint-disable-next-line no-console
+    console.log(msg);
+  };
+  logMessage(
     `nestjs-prisma-graphql: saving ${String(sourceFileCount)} source files to ${output}`,
   );
 
@@ -141,14 +145,12 @@ export async function generateFiles(args: EventArguments): Promise<void> {
     // ts-morph's project.save() can build up deep call stacks on large projects
     const BATCH_SIZE = 100;
     if (sourceFileCount > BATCH_SIZE) {
-      // eslint-disable-next-line no-console
-      console.log(
+      logMessage(
         `nestjs-prisma-graphql: using batched save for large schema (${String(sourceFileCount)} files)`,
       );
       for (let i = 0; i < sourceFileCount; i += BATCH_SIZE) {
         const batch = sourceFiles.slice(i, i + BATCH_SIZE);
-        // eslint-disable-next-line no-console
-        console.log(
+        logMessage(
           `nestjs-prisma-graphql: saving batch ${String(Math.floor(i / BATCH_SIZE) + 1)}/${String(Math.ceil(sourceFileCount / BATCH_SIZE))} (${String(batch.length)} files)`,
         );
         await Promise.all(batch.map(async sf => await sf.save()));

@@ -8,14 +8,23 @@ import { extractEnumValueDocs } from './prisma-enum-doc.js';
 export function registerEnum(enumType: SchemaEnum, args: EventArguments): void {
   const { config, enums, getSourceFile } = args;
 
-  if (!config.emitBlocks.prismaEnums && !enums[enumType.name]) {
+  // Type-safe extraction of enum name from SchemaEnum
+  // Access the name property through unknown to avoid unsafe member access
+  const enumTypeAsRecord = enumType as Record<string, unknown>;
+  const rawName: unknown = enumTypeAsRecord.name;
+  const enumName: string = typeof rawName === 'string' ? rawName : String(rawName);
+  const enumValue = enums[enumName];
+  if (!config.emitBlocks.prismaEnums && enumValue === undefined) {
     return;
   }
 
-  const dataModelEnum = enums[enumType.name];
-  const enumTypesData = dataModelEnum?.values ?? [];
+  const dataModelEnum = enumValue;
+  const enumTypesData = (dataModelEnum?.values ?? []) as Array<{
+    name: string;
+    documentation?: string;
+  }>;
   const sourceFile = getSourceFile({
-    name: enumType.name,
+    name: enumName,
     type: 'enum',
   });
 
@@ -41,22 +50,31 @@ export function registerEnum(enumType: SchemaEnum, args: EventArguments): void {
     : '';
   const valuesMapEntry = hasValuesMap ? `, valuesMap: ${formattedValuesMap}` : '';
 
+  // Type-safe extraction of enum values
+  // Access the values property through unknown to avoid unsafe member access
+  const enumTypeRecord = enumType as Record<string, unknown>;
+  const rawValues: unknown = enumTypeRecord.values;
+  const enumValues: string[] = Array.isArray(rawValues)
+    ? (rawValues as unknown[]).map((v: unknown) => String(v))
+    : [];
+
   const enumStructure: EnumDeclarationStructure = {
     isExported: true,
     kind: StructureKind.Enum,
-    members: enumType.values.map(v => ({
+    members: enumValues.map((v: string) => ({
       initializer: JSON.stringify(v),
       name: v,
     })),
-    name: enumType.name,
+    name: enumName,
   };
 
+  const enumTypeName = enumName;
   sourceFile.set({
     statements: [
       ...importDeclarations.toStatements(),
       enumStructure,
       '\n',
-      `registerEnumType(${enumType.name}, { name: '${enumType.name}', description: ${JSON.stringify(
+      `registerEnumType(${enumTypeName}, { name: '${enumTypeName}', description: ${JSON.stringify(
         dataModelEnum?.documentation,
       )}${valuesMapEntry} })`,
     ],

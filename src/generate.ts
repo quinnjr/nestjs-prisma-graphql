@@ -1,14 +1,28 @@
 import type { GeneratorOptions } from '@prisma/generator-helper';
 
 import { mapKeys } from 'lodash-es';
-import { ok } from 'node:assert';
 import { createRequire } from 'node:module';
 import { Project, QuoteKind } from 'ts-morph';
 
+import { ok } from './helpers/type-safe-assert.js';
+
 // Use createRequire for CommonJS module compatibility in ESM
-const requireCjs = createRequire(import.meta.url);
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-const AwaitEventEmitter = requireCjs('await-event-emitter').default;
+// Type-safe wrapper for require to avoid 'any' type issues
+type RequireFunction = (id: string) => unknown;
+const createRequireTyped: (filename: string | URL) => RequireFunction = createRequire as (
+  filename: string | URL,
+) => RequireFunction;
+const requireCjs: RequireFunction = createRequireTyped(import.meta.url);
+
+// Type for await-event-emitter's default export
+type AwaitEventEmitterConstructor = new () => EventEmitter;
+interface AwaitEventEmitterModule {
+  default: AwaitEventEmitterConstructor;
+}
+const AwaitEventEmitter: AwaitEventEmitterModule = requireCjs(
+  'await-event-emitter',
+) as AwaitEventEmitterModule;
+const AwaitEventEmitterClass = AwaitEventEmitter.default;
 
 import type {
   Document,
@@ -57,16 +71,12 @@ export async function generate(
 ): Promise<void> {
   const { connectCallback, dmmf, generator, skipAddOutputSourceFiles } = args;
 
-  const generatorOutputValue = generator.output?.value;
-  ok(
-    generatorOutputValue !== null && generatorOutputValue !== undefined,
-    'Missing generator configuration: output',
-  );
+  const generatorOutputValue = generator.output?.value ?? '';
+  ok(generatorOutputValue !== '', 'Missing generator configuration: output');
 
   const config = createConfig(generator.config);
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  const eventEmitter = new AwaitEventEmitter() as EventEmitter;
+  const eventEmitter = new AwaitEventEmitterClass();
   eventEmitter.on('Warning', warning);
   if (config.emitBlocks.models) {
     eventEmitter.on('Model', modelData);
@@ -150,7 +160,7 @@ export async function generate(
   const removeTypes = new Set<string>();
 
   // Build circular dependency detection for ESM compatibility
-  const datamodelTypes = datamodel.types ?? [];
+  const datamodelTypes: Model[] = (datamodel.types ?? []);
   const allModels: Model[] = [...datamodel.models, ...datamodelTypes];
   const dependencyGraph = buildDependencyGraph(allModels);
   const circularDependencies = detectCircularDependencies(dependencyGraph);
