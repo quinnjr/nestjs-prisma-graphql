@@ -207,7 +207,7 @@ interface ConfigInputItem {
 
 type FileExistsFunction = (filePath: string) => boolean;
 type ExistsSyncFunction = (path: string) => boolean;
-const existsSyncTyped: ExistsSyncFunction = existsSync as ExistsSyncFunction;
+const existsSyncTyped: ExistsSyncFunction = existsSync;
 const tsConfigFileExistsRaw: unknown = memoize((filePath: string): boolean => {
   const exists: boolean = existsSyncTyped(filePath);
   return exists;

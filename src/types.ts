@@ -25,9 +25,7 @@ export type InputType = WritableDeep<DMMF.InputType>;
 export type FieldLocation = DMMF.FieldLocation;
 export type OutputType = WritableDeep<DMMF.OutputType>;
 export type SchemaField = WritableDeep<DMMF.SchemaField>;
-// Note: In Prisma 7, the enumTypes in schema uses DatamodelSchemaEnum which has 'values: string[]'
-// not SchemaEnum which has 'data: {key, value}[]'
-export type SchemaEnum = DMMF.DatamodelSchemaEnum;
+export type SchemaEnum = WritableDeep<DMMF.SchemaEnum>;
 export type Model = WritableDeep<DMMF.Model>;
 export type SchemaArg = WritableDeep<DMMF.SchemaArg>;
 export type Schema = WritableDeep<DMMF.Schema>;
