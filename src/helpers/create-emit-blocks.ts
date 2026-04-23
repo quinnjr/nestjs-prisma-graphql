@@ -18,33 +18,40 @@ const allEmmittedBlocks: EmittedBlockType[] = [
 ];
 
 const blocksDependencyMap: Record<EmitBlocksOption, EmittedBlockType[]> = {
-  enums: ['schemaEnums', 'prismaEnums'],
-  models: ['models', 'schemaEnums'],
-  inputs: ['inputs', 'prismaEnums'],
-  outputs: ['outputs'],
   args: ['args', 'inputs', 'prismaEnums'],
+  enums: ['schemaEnums', 'prismaEnums'],
+  inputs: ['inputs', 'prismaEnums'],
+  models: ['models', 'schemaEnums'],
+  outputs: ['outputs'],
 };
 
 export function createEmitBlocks(data?: string[]): Record<EmittedBlockType, boolean> {
   if (!data) {
-    return Object.fromEntries(allEmmittedBlocks.map(block => [block, true])) as Record<
+    const entries = allEmmittedBlocks.map(block => [block, true] as const);
+    const allBlocks = Object.fromEntries(entries) as Record<EmittedBlockType, boolean>;
+    return allBlocks;
+  }
+
+  const initialBlocks: Record<EmittedBlockType, boolean> = {};
+  let currentBlocks = initialBlocks;
+
+  for (const block of data) {
+    if (!Object.keys(blocksDependencyMap).includes(block)) {
+      continue;
+    }
+
+    const blockEntries = blocksDependencyMap[block as EmitBlocksOption].map(
+      emittedBlock => [emittedBlock, true] as const,
+    );
+    const newBlocks = Object.fromEntries(blockEntries) as Record<
       EmittedBlockType,
       boolean
     >;
-  }
-
-  let blocksToEmit = {} as Record<EmittedBlockType, boolean>;
-
-  for (const block of data) {
-    if (!Object.keys(blocksDependencyMap).includes(block)) continue;
-
-    blocksToEmit = {
-      ...blocksToEmit,
-      ...Object.fromEntries(
-        (blocksDependencyMap[block as EmitBlocksOption] as EmittedBlockType[]).map(block => [block, true]),
-      ),
+    currentBlocks = {
+      ...currentBlocks,
+      ...newBlocks,
     };
   }
 
-  return blocksToEmit;
+  return currentBlocks;
 }

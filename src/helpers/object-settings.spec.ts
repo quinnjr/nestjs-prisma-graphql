@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { ObjectSettings, createObjectSettings } from './object-settings.js';
 import { createConfig } from './create-config.js';
+import { createObjectSettings, ObjectSettings } from './object-settings.js';
 
 describe('ObjectSettings', () => {
   describe('shouldHideField', () => {
@@ -14,43 +14,43 @@ describe('ObjectSettings', () => {
     it('should return true when HideField with input is set and checking input', () => {
       const settings = new ObjectSettings();
       settings.push({
-        name: 'HideField',
-        kind: 'Decorator',
-        input: true,
-        output: false,
-        model: false,
         from: '@nestjs/graphql',
+        input: true,
+        kind: 'Decorator',
+        model: false,
+        name: 'HideField',
+        output: false,
       });
 
-      expect(settings.shouldHideField({ name: 'password', input: true })).toBe(true);
+      expect(settings.shouldHideField({ input: true, name: 'password' })).toBe(true);
       expect(settings.shouldHideField({ name: 'password', output: true })).toBe(false);
     });
 
     it('should return true when HideField with output is set and checking output', () => {
       const settings = new ObjectSettings();
       settings.push({
-        name: 'HideField',
-        kind: 'Decorator',
-        input: false,
-        output: true,
-        model: false,
         from: '@nestjs/graphql',
+        input: false,
+        kind: 'Decorator',
+        model: false,
+        name: 'HideField',
+        output: true,
       });
 
       expect(settings.shouldHideField({ name: 'password', output: true })).toBe(true);
-      expect(settings.shouldHideField({ name: 'password', input: true })).toBe(false);
+      expect(settings.shouldHideField({ input: true, name: 'password' })).toBe(false);
     });
 
     it('should use match function when provided', () => {
       const settings = new ObjectSettings();
       settings.push({
-        name: 'HideField',
-        kind: 'Decorator',
-        input: false,
-        output: false,
-        model: false,
         from: '@nestjs/graphql',
+        input: false,
+        kind: 'Decorator',
         match: (name: string) => name.startsWith('_'),
+        model: false,
+        name: 'HideField',
+        output: false,
       });
 
       expect(settings.shouldHideField({ name: '_internal' })).toBe(true);
@@ -68,12 +68,12 @@ describe('ObjectSettings', () => {
     it('should return FieldType setting when it exists', () => {
       const settings = new ObjectSettings();
       settings.push({
-        name: 'GraphQLEmailAddress',
-        kind: 'FieldType',
-        input: true,
-        output: true,
-        model: false,
         from: 'graphql-scalars',
+        input: true,
+        kind: 'FieldType',
+        model: false,
+        name: 'GraphQLEmailAddress',
+        output: true,
       });
 
       const result = settings.getFieldType({ name: 'email' });
@@ -84,28 +84,28 @@ describe('ObjectSettings', () => {
     it('should respect input/output flags', () => {
       const settings = new ObjectSettings();
       settings.push({
-        name: 'CustomType',
-        kind: 'FieldType',
-        input: true,
-        output: false,
-        model: false,
         from: 'custom',
+        input: true,
+        kind: 'FieldType',
+        model: false,
+        name: 'CustomType',
+        output: false,
       });
 
-      expect(settings.getFieldType({ name: 'field', input: true })).toBeDefined();
+      expect(settings.getFieldType({ input: true, name: 'field' })).toBeDefined();
       expect(settings.getFieldType({ name: 'field', output: true })).toBeUndefined();
     });
 
     it('should use match function when provided', () => {
       const settings = new ObjectSettings();
       settings.push({
-        name: 'EmailType',
-        kind: 'FieldType',
-        input: true,
-        output: true,
-        model: false,
         from: 'custom',
+        input: true,
+        kind: 'FieldType',
         match: (name: string) => name.toLowerCase().includes('email'),
+        model: false,
+        name: 'EmailType',
+        output: true,
       });
 
       expect(settings.getFieldType({ name: 'userEmail' })).toBeDefined();
@@ -123,12 +123,12 @@ describe('ObjectSettings', () => {
     it('should return PropertyType setting when it exists', () => {
       const settings = new ObjectSettings();
       settings.push({
-        name: 'CustomClass',
-        kind: 'PropertyType',
-        input: true,
-        output: true,
-        model: false,
         from: './custom-class',
+        input: true,
+        kind: 'PropertyType',
+        model: false,
+        name: 'CustomClass',
+        output: true,
       });
 
       const result = settings.getPropertyType({ name: 'field' });
@@ -149,13 +149,13 @@ describe('ObjectSettings', () => {
     it('should merge ObjectType arguments when present', () => {
       const settings = new ObjectSettings();
       settings.push({
-        name: 'ObjectType',
-        kind: 'ObjectType',
-        input: false,
-        output: false,
-        model: false,
-        from: '@nestjs/graphql',
         arguments: { isAbstract: true },
+        from: '@nestjs/graphql',
+        input: false,
+        kind: 'ObjectType',
+        model: false,
+        name: 'ObjectType',
+        output: false,
       });
 
       const result = settings.getObjectTypeArguments({ description: 'Test' });
@@ -166,13 +166,13 @@ describe('ObjectSettings', () => {
     it('should prepend custom name when provided in arguments', () => {
       const settings = new ObjectSettings();
       settings.push({
-        name: 'ObjectType',
-        kind: 'ObjectType',
-        input: false,
-        output: false,
-        model: false,
-        from: '@nestjs/graphql',
         arguments: { name: 'CustomName' },
+        from: '@nestjs/graphql',
+        input: false,
+        kind: 'ObjectType',
+        model: false,
+        name: 'ObjectType',
+        output: false,
       });
 
       const result = settings.getObjectTypeArguments({});
@@ -192,13 +192,13 @@ describe('ObjectSettings', () => {
     it('should return arguments from Field setting', () => {
       const settings = new ObjectSettings();
       settings.push({
-        name: '',
-        kind: 'Field',
-        input: false,
-        output: false,
-        model: false,
-        from: '',
         arguments: { deprecationReason: 'Use newField instead' },
+        from: '',
+        input: false,
+        kind: 'Field',
+        model: false,
+        name: '',
+        output: false,
       });
 
       const result = settings.fieldArguments();
@@ -214,8 +214,8 @@ describe('createObjectSettings', () => {
   describe('HideField parsing', () => {
     it('should parse @HideField() decorator', () => {
       const { settings } = createObjectSettings({
-        text: '@HideField()',
         config,
+        text: '@HideField()',
       });
 
       const hideField = settings.find(s => s.name === 'HideField');
@@ -225,8 +225,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @HideField({ input: true })', () => {
       const { settings } = createObjectSettings({
-        text: '@HideField({ input: true })',
         config,
+        text: '@HideField({ input: true })',
       });
 
       const hideField = settings.find(s => s.name === 'HideField');
@@ -235,8 +235,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @HideField({ output: true, input: true })', () => {
       const { settings } = createObjectSettings({
-        text: '@HideField({ output: true, input: true })',
         config,
+        text: '@HideField({ output: true, input: true })',
       });
 
       const hideField = settings.find(s => s.name === 'HideField');
@@ -246,8 +246,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @TypeGraphQL.omit as HideField', () => {
       const { settings } = createObjectSettings({
-        text: '@TypeGraphQL.omit(output: true)',
         config,
+        text: '@TypeGraphQL.omit(output: true)',
       });
 
       const hideField = settings.find(s => s.name === 'HideField');
@@ -259,8 +259,8 @@ describe('createObjectSettings', () => {
   describe('FieldType parsing', () => {
     it('should parse @FieldType() decorator', () => {
       const { settings } = createObjectSettings({
-        text: '@FieldType("GraphQLEmailAddress")',
         config,
+        text: '@FieldType("GraphQLEmailAddress")',
       });
 
       const fieldType = settings.find(s => s.kind === 'FieldType');
@@ -270,8 +270,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @FieldType with options object', () => {
       const { settings } = createObjectSettings({
-        text: '@FieldType({ name: "CustomType", input: true, output: false })',
         config,
+        text: '@FieldType({ name: "CustomType", input: true, output: false })',
       });
 
       const fieldType = settings.find(s => s.kind === 'FieldType');
@@ -284,8 +284,8 @@ describe('createObjectSettings', () => {
   describe('PropertyType parsing', () => {
     it('should parse @PropertyType() decorator', () => {
       const { settings } = createObjectSettings({
-        text: '@PropertyType("CustomClass")',
         config,
+        text: '@PropertyType("CustomClass")',
       });
 
       const propertyType = settings.find(s => s.kind === 'PropertyType');
@@ -297,8 +297,8 @@ describe('createObjectSettings', () => {
   describe('@deprecated parsing', () => {
     it('should parse @deprecated with reason', () => {
       const { settings } = createObjectSettings({
-        text: '@deprecated Use newField instead',
         config,
+        text: '@deprecated Use newField instead',
       });
 
       const field = settings.find(s => s.kind === 'Field');
@@ -310,8 +310,8 @@ describe('createObjectSettings', () => {
   describe('@complexity parsing', () => {
     it('should parse @complexity with number', () => {
       const { settings } = createObjectSettings({
-        text: '@complexity 5',
         config,
+        text: '@complexity 5',
       });
 
       const field = settings.find(s => s.kind === 'Field');
@@ -321,8 +321,8 @@ describe('createObjectSettings', () => {
 
     it('should default to 1 for invalid complexity values', () => {
       const { settings } = createObjectSettings({
-        text: '@complexity invalid',
         config,
+        text: '@complexity invalid',
       });
 
       const field = settings.find(s => s.kind === 'Field');
@@ -334,8 +334,8 @@ describe('createObjectSettings', () => {
   describe('documentation extraction', () => {
     it('should extract non-decorator lines as documentation', () => {
       const { documentation } = createObjectSettings({
-        text: 'This is a description\nof the field',
         config,
+        text: 'This is a description\nof the field',
       });
 
       expect(documentation).toBe('This is a description\nof the field');
@@ -343,8 +343,8 @@ describe('createObjectSettings', () => {
 
     it('should exclude decorator lines from documentation', () => {
       const { documentation } = createObjectSettings({
-        text: 'Field description\n@HideField()\nMore description',
         config,
+        text: 'Field description\n@HideField()\nMore description',
       });
 
       expect(documentation).toBe('Field description\nMore description');
@@ -354,8 +354,8 @@ describe('createObjectSettings', () => {
   describe('ObjectType parsing', () => {
     it('should parse @ObjectType() decorator', () => {
       const { settings } = createObjectSettings({
-        text: '@ObjectType("CustomName")',
         config,
+        text: '@ObjectType("CustomName")',
       });
 
       const objectType = settings.find(s => s.kind === 'ObjectType');
@@ -366,8 +366,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @ObjectType with isAbstract option', () => {
       const { settings } = createObjectSettings({
-        text: '@ObjectType({ isAbstract: true })',
         config,
+        text: '@ObjectType({ isAbstract: true })',
       });
 
       const objectType = settings.find(s => s.kind === 'ObjectType');
@@ -378,14 +378,14 @@ describe('createObjectSettings', () => {
 
   describe('Validator decorator parsing', () => {
     const configWithValidator = createConfig({
-      'fields_Validator_from': 'class-validator',
-      'fields_Validator_input': 'true',
+      fields_Validator_from: 'class-validator',
+      fields_Validator_input: 'true',
     });
 
     it('should parse @Validator.IsEmail() decorator', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.IsEmail()',
         config: configWithValidator,
+        text: '@Validator.IsEmail()',
       });
 
       const validator = settings.find(s => s.namespaceImport === 'Validator');
@@ -395,8 +395,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @Validator.IsNotEmpty() decorator', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.IsNotEmpty()',
         config: configWithValidator,
+        text: '@Validator.IsNotEmpty()',
       });
 
       const validator = settings.find(s => s.name === 'Validator.IsNotEmpty');
@@ -405,8 +405,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @Validator.MinLength() with argument', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.MinLength(5)',
         config: configWithValidator,
+        text: '@Validator.MinLength(5)',
       });
 
       const validator = settings.find(s => s.name === 'Validator.MinLength');
@@ -416,8 +416,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @Validator.MaxLength() with argument', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.MaxLength(100)',
         config: configWithValidator,
+        text: '@Validator.MaxLength(100)',
       });
 
       const validator = settings.find(s => s.name === 'Validator.MaxLength');
@@ -427,8 +427,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @Validator.Min() with argument', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.Min(0)',
         config: configWithValidator,
+        text: '@Validator.Min(0)',
       });
 
       const validator = settings.find(s => s.name === 'Validator.Min');
@@ -438,8 +438,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @Validator.Max() with argument', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.Max(150)',
         config: configWithValidator,
+        text: '@Validator.Max(150)',
       });
 
       const validator = settings.find(s => s.name === 'Validator.Max');
@@ -449,8 +449,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @Validator.IsOptional() decorator', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.IsOptional()',
         config: configWithValidator,
+        text: '@Validator.IsOptional()',
       });
 
       const validator = settings.find(s => s.name === 'Validator.IsOptional');
@@ -459,8 +459,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @Validator.IsString() decorator', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.IsString()',
         config: configWithValidator,
+        text: '@Validator.IsString()',
       });
 
       const validator = settings.find(s => s.name === 'Validator.IsString');
@@ -469,8 +469,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @Validator.IsInt() decorator', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.IsInt()',
         config: configWithValidator,
+        text: '@Validator.IsInt()',
       });
 
       const validator = settings.find(s => s.name === 'Validator.IsInt');
@@ -479,8 +479,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @Validator.IsUrl() decorator', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.IsUrl()',
         config: configWithValidator,
+        text: '@Validator.IsUrl()',
       });
 
       const validator = settings.find(s => s.name === 'Validator.IsUrl');
@@ -489,8 +489,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @Validator.IsUUID() decorator', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.IsUUID()',
         config: configWithValidator,
+        text: '@Validator.IsUUID()',
       });
 
       const validator = settings.find(s => s.name === 'Validator.IsUUID');
@@ -499,8 +499,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @Validator.Matches() with regex pattern', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.Matches(/^[a-z]+$/)',
         config: configWithValidator,
+        text: '@Validator.Matches(/^[a-z]+$/)',
       });
 
       const validator = settings.find(s => s.name === 'Validator.Matches');
@@ -510,8 +510,8 @@ describe('createObjectSettings', () => {
 
     it('should parse multiple validators on same field', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.IsEmail()\n@Validator.IsNotEmpty()\n@Validator.MaxLength(255)',
         config: configWithValidator,
+        text: '@Validator.IsEmail()\n@Validator.IsNotEmpty()\n@Validator.MaxLength(255)',
       });
 
       const validators = settings.filter(s => s.namespaceImport === 'Validator');
@@ -523,8 +523,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @Validator.ArrayNotEmpty() decorator', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.ArrayNotEmpty()',
         config: configWithValidator,
+        text: '@Validator.ArrayNotEmpty()',
       });
 
       const validator = settings.find(s => s.name === 'Validator.ArrayNotEmpty');
@@ -533,8 +533,8 @@ describe('createObjectSettings', () => {
 
     it('should parse @Validator.ArrayMinSize() with argument', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.ArrayMinSize(1)',
         config: configWithValidator,
+        text: '@Validator.ArrayMinSize(1)',
       });
 
       const validator = settings.find(s => s.name === 'Validator.ArrayMinSize');
@@ -544,8 +544,8 @@ describe('createObjectSettings', () => {
 
     it('should inherit from config for validator settings', () => {
       const { settings } = createObjectSettings({
-        text: '@Validator.IsEmail()',
         config: configWithValidator,
+        text: '@Validator.IsEmail()',
       });
 
       const validator = settings.find(s => s.namespaceImport === 'Validator');
@@ -557,8 +557,8 @@ describe('createObjectSettings', () => {
   describe('Directive parsing', () => {
     it('should parse @Directive() decorator', () => {
       const { settings } = createObjectSettings({
-        text: '@Directive("@auth")',
         config,
+        text: '@Directive("@auth")',
       });
 
       const directive = settings.find(s => s.name === 'Directive');

@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
 import { createConfig } from './create-config.js';
 
 describe('createConfig', () => {
@@ -21,8 +22,8 @@ describe('createConfig', () => {
 
   it('should parse flattened config options', () => {
     const config = createConfig({
-      'fields_Validator_from': 'class-validator',
-      'fields_Validator_input': 'true',
+      fields_Validator_from: 'class-validator',
+      fields_Validator_input: 'true',
     });
 
     expect(config.fields.Validator).toBeDefined();
@@ -32,9 +33,9 @@ describe('createConfig', () => {
 
   it('should parse Validator config with output flag', () => {
     const config = createConfig({
-      'fields_Validator_from': 'class-validator',
-      'fields_Validator_input': 'true',
-      'fields_Validator_output': 'false',
+      fields_Validator_from: 'class-validator',
+      fields_Validator_input: 'true',
+      fields_Validator_output: 'false',
     });
 
     expect(config.fields.Validator?.input).toBe(true);
@@ -43,8 +44,8 @@ describe('createConfig', () => {
 
   it('should parse Validator config with model flag', () => {
     const config = createConfig({
-      'fields_Validator_from': 'class-validator',
-      'fields_Validator_model': 'true',
+      fields_Validator_from: 'class-validator',
+      fields_Validator_model: 'true',
     });
 
     expect(config.fields.Validator?.model).toBe(true);
@@ -52,10 +53,10 @@ describe('createConfig', () => {
 
   it('should parse multiple field namespaces', () => {
     const config = createConfig({
-      'fields_Validator_from': 'class-validator',
-      'fields_Validator_input': 'true',
-      'fields_Scalars_from': 'graphql-scalars',
-      'fields_Scalars_output': 'true',
+      fields_Scalars_from: 'graphql-scalars',
+      fields_Scalars_output: 'true',
+      fields_Validator_from: 'class-validator',
+      fields_Validator_input: 'true',
     });
 
     expect(config.fields.Validator?.from).toBe('class-validator');
@@ -64,10 +65,10 @@ describe('createConfig', () => {
 
   it('should parse decorate options', () => {
     const config = createConfig({
-      'decorate_1_type': 'CreateUserArgs',
-      'decorate_1_field': 'data',
-      'decorate_1_name': 'ValidateNested',
-      'decorate_1_from': 'class-validator',
+      decorate_1_field: 'data',
+      decorate_1_from: 'class-validator',
+      decorate_1_name: 'ValidateNested',
+      decorate_1_type: 'CreateUserArgs',
     });
 
     expect(config.decorate).toHaveLength(1);

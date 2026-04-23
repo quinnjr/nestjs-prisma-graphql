@@ -128,7 +128,7 @@ generator client {
 }
 
 generator nestgraphql {
-  provider      = "node node_modules/@pegasusheavy/nestjs-prisma-graphql"
+  provider      = "nestjs-prisma-graphql"
   output        = "../src/@generated"
   esmCompatible = true
 }
@@ -188,14 +188,14 @@ export class UserResolver {
 
 ### Core Options
 
-| Option               | Type      | Default                    | Description                                |
-| -------------------- | --------- | -------------------------- | ------------------------------------------ |
-| `output`             | `string`  | _required_                 | Output folder relative to the schema file  |
-| `outputFilePattern`  | `string`  | `{model}/{name}.{type}.ts` | Pattern for generated file paths           |
-| `esmCompatible`      | `boolean` | `true`                     | Enable ESM circular import resolution      |
-| `prismaClientImport` | `string`  | `@prisma/client`           | Custom path to Prisma Client               |
-| `tsConfigFilePath`   | `string`  | -                          | Path to tsconfig.json for type checking    |
-| `disabled`           | `boolean` | `false`                    | Disable generation (can also use env vars) |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `output` | `string` | *required* | Output folder relative to the schema file |
+| `outputFilePattern` | `string` | `{model}/{name}.{type}.ts` | Pattern for generated file paths |
+| `esmCompatible` | `boolean` | `true` | Enable ESM circular import resolution |
+| `prismaClientImport` | `string` | `@prisma/client` | Custom path to Prisma Client |
+| `tsConfigFilePath` | `string` | - | Path to tsconfig.json for type checking |
+| `disabled` | `boolean` | `false` | Disable generation (can also use env vars) |
 
 ### Disabling the Generator
 
@@ -223,7 +223,7 @@ All environment variables accept `true` or `1` as valid values to disable the ge
 
 ```prisma
 generator nestgraphql {
-  provider = "node node_modules/@pegasusheavy/nestjs-prisma-graphql"
+  provider = "nestjs-prisma-graphql"
   output   = "../src/@generated"
   disabled = true  // Skip generation (accepts: true, "true", "1", "yes")
 }
@@ -249,19 +249,18 @@ ENV CI_SKIP_PRISMA_GRAPHQL=$SKIP_CODEGEN
 ```
 
 When disabled, the generator will output:
-
 ```
 ⏭️  nestjs-prisma-graphql: Generation skipped (disabled via environment variable or config)
 ```
 
 #### Output File Pattern Variables
 
-| Variable        | Description                                  |
-| --------------- | -------------------------------------------- |
-| `{model}`       | Model name in different cases                |
-| `{name}`        | Type/class name                              |
-| `{type}`        | File type (model, input, args, enum, output) |
-| `{plural.type}` | Pluralized file type                         |
+| Variable | Description |
+|----------|-------------|
+| `{model}` | Model name in different cases |
+| `{name}` | Type/class name |
+| `{type}` | File type (model, input, args, enum, output) |
+| `{plural.type}` | Pluralized file type |
 
 **Examples:**
 
@@ -278,33 +277,33 @@ outputFilePattern = "{plural.type}/{name}.{type}.ts"
 
 ### Code Generation Options
 
-| Option                                  | Type       | Default | Description                                                               |
-| --------------------------------------- | ---------- | ------- | ------------------------------------------------------------------------- |
-| `combineScalarFilters`                  | `boolean`  | `false` | Combine nested/nullable scalar filters into single types                  |
-| `noAtomicOperations`                    | `boolean`  | `false` | Remove atomic operation input types (IntFieldUpdateOperationsInput, etc.) |
-| `reExport`                              | `enum`     | `None`  | Create index.ts barrel files                                              |
-| `emitSingle`                            | `boolean`  | `false` | Generate all types in a single file                                       |
-| `emitCompiled`                          | `boolean`  | `false` | Emit compiled JavaScript alongside TypeScript                             |
-| `purgeOutput`                           | `boolean`  | `false` | Delete output folder before generating                                    |
-| `emitBlocks`                            | `string[]` | all     | Selective generation: `enums`, `models`, `inputs`, `outputs`, `args`      |
-| `requireSingleFieldsInWhereUniqueInput` | `boolean`  | `false` | Make unique fields required in WhereUniqueInput                           |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `combineScalarFilters` | `boolean` | `false` | Combine nested/nullable scalar filters into single types |
+| `noAtomicOperations` | `boolean` | `false` | Remove atomic operation input types (IntFieldUpdateOperationsInput, etc.) |
+| `reExport` | `enum` | `None` | Create index.ts barrel files |
+| `emitSingle` | `boolean` | `false` | Generate all types in a single file |
+| `emitCompiled` | `boolean` | `false` | Emit compiled JavaScript alongside TypeScript |
+| `purgeOutput` | `boolean` | `false` | Delete output folder before generating |
+| `emitBlocks` | `string[]` | all | Selective generation: `enums`, `models`, `inputs`, `outputs`, `args` |
+| `requireSingleFieldsInWhereUniqueInput` | `boolean` | `false` | Make unique fields required in WhereUniqueInput |
 
 #### reExport Options
 
-| Value         | Description                                 |
-| ------------- | ------------------------------------------- |
-| `None`        | No barrel files                             |
-| `Directories` | Create index.ts in each directory           |
-| `Single`      | Create single index.ts at output root       |
-| `All`         | Create index.ts in all directories and root |
+| Value | Description |
+|-------|-------------|
+| `None` | No barrel files |
+| `Directories` | Create index.ts in each directory |
+| `Single` | Create single index.ts at output root |
+| `All` | Create index.ts in all directories and root |
 
 ### Type Customization Options
 
-| Option            | Type      | Default | Description                                 |
-| ----------------- | --------- | ------- | ------------------------------------------- |
-| `noTypeId`        | `boolean` | `false` | Use `String` instead of `ID` for @id fields |
-| `omitModelsCount` | `boolean` | `false` | Omit `_count` field from model types        |
-| `useInputType`    | `string`  | -       | Pattern for selecting input types           |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `noTypeId` | `boolean` | `false` | Use `String` instead of `ID` for @id fields |
+| `omitModelsCount` | `boolean` | `false` | Omit `_count` field from model types |
+| `useInputType` | `string` | - | Pattern for selecting input types |
 
 ---
 
@@ -334,11 +333,11 @@ model User {
 
 **Options:**
 
-| Option   | Type                 | Description                              |
-| -------- | -------------------- | ---------------------------------------- |
-| `input`  | `boolean`            | Hide from input types                    |
-| `output` | `boolean`            | Hide from output types (default: `true`) |
-| `match`  | `string \| string[]` | Glob pattern(s) for field name matching  |
+| Option | Type | Description |
+|--------|------|-------------|
+| `input` | `boolean` | Hide from input types |
+| `output` | `boolean` | Hide from output types (default: `true`) |
+| `match` | `string \| string[]` | Glob pattern(s) for field name matching |
 
 ### @FieldType
 
@@ -359,13 +358,13 @@ model User {
 
 **Options:**
 
-| Option   | Type      | Description                         |
-| -------- | --------- | ----------------------------------- |
-| `name`   | `string`  | Type name (required)                |
-| `from`   | `string`  | Import module specifier             |
-| `input`  | `boolean` | Apply to input types                |
-| `output` | `boolean` | Apply to output types               |
-| `match`  | `string`  | Glob pattern for type name matching |
+| Option | Type | Description |
+|--------|------|-------------|
+| `name` | `string` | Type name (required) |
+| `from` | `string` | Import module specifier |
+| `input` | `boolean` | Apply to input types |
+| `output` | `boolean` | Apply to output types |
+| `match` | `string` | Glob pattern for type name matching |
 
 ### @PropertyType
 
@@ -455,7 +454,7 @@ Add the validator configuration to your generator:
 
 ```prisma
 generator nestgraphql {
-  provider                 = "node node_modules/@pegasusheavy/nestjs-prisma-graphql"
+  provider                 = "nestjs-prisma-graphql"
   output                   = "../src/@generated"
   fields_Validator_from    = "class-validator"
   fields_Validator_input   = true
@@ -521,7 +520,6 @@ export class UserCreateInput {
 All `class-validator` decorators are supported:
 
 **String Validators:**
-
 - `@Validator.IsEmail()`
 - `@Validator.IsUrl()`
 - `@Validator.IsUUID()`
@@ -532,7 +530,6 @@ All `class-validator` decorators are supported:
 - `@Validator.IsAlphanumeric()`
 
 **Number Validators:**
-
 - `@Validator.Min(n)`
 - `@Validator.Max(n)`
 - `@Validator.IsPositive()`
@@ -540,14 +537,12 @@ All `class-validator` decorators are supported:
 - `@Validator.IsInt()`
 
 **Type Validators:**
-
 - `@Validator.IsBoolean()`
 - `@Validator.IsDate()`
 - `@Validator.IsArray()`
 - `@Validator.IsObject()`
 
 **General:**
-
 - `@Validator.IsOptional()`
 - `@Validator.IsNotEmpty()`
 - `@Validator.IsDefined()`
@@ -563,7 +558,7 @@ Define custom decorator namespaces for your own decorators or third-party librar
 
 ```prisma
 generator nestgraphql {
-  provider                    = "node node_modules/@pegasusheavy/nestjs-prisma-graphql"
+  provider                    = "nestjs-prisma-graphql"
   output                      = "../src/@generated"
 
   # class-transformer decorators
@@ -590,52 +585,24 @@ model User {
 }
 ```
 
-### BigInt Scalar Decorators
-
-Apply GraphQL scalar decorators to BigInt fields:
-
-```prisma
-generator nestgraphql {
-  provider                     = "node node_modules/@pegasusheavy/nestjs-prisma-graphql"
-  output                       = "../src/@generated"
-
-  # Apply BigInt scalar to input types
-  fields_BigIntScalar_input    = true
-
-  # Apply BigInt scalar to output types
-  fields_BigIntScalar_output   = true
-
-  # Configure the BigInt scalar
-  graphqlScalars_BigInt_name      = "GraphQLBigInt"
-  graphqlScalars_BigInt_specifier = "graphql-scalars"
-}
-
-model Transaction {
-  id     String @id
-  amount BigInt  // Will use GraphQLBigInt scalar in generated types
-}
-```
-
-This is useful when you want to use a custom GraphQL scalar for `BigInt` fields instead of the default string representation.
-
 ---
 
 ## GraphQL Scalars
 
 ### Built-in Scalar Mappings
 
-| Prisma Type  | GraphQL Type     | TypeScript Type    |
-| ------------ | ---------------- | ------------------ |
-| `String`     | `String`         | `string`           |
-| `Int`        | `Int`            | `number`           |
-| `Float`      | `Float`          | `number`           |
-| `Boolean`    | `Boolean`        | `boolean`          |
-| `DateTime`   | `Date`           | `Date \| string`   |
-| `Json`       | `GraphQLJSON`    | `any`              |
-| `Decimal`    | `GraphQLDecimal` | `Decimal`          |
-| `BigInt`     | `BigInt`         | `bigint \| number` |
-| `Bytes`      | `String`         | `Uint8Array`       |
-| `@id` fields | `ID`             | `string`           |
+| Prisma Type | GraphQL Type | TypeScript Type |
+|-------------|--------------|-----------------|
+| `String` | `String` | `string` |
+| `Int` | `Int` | `number` |
+| `Float` | `Float` | `number` |
+| `Boolean` | `Boolean` | `boolean` |
+| `DateTime` | `Date` | `Date \| string` |
+| `Json` | `GraphQLJSON` | `any` |
+| `Decimal` | `GraphQLDecimal` | `Decimal` |
+| `BigInt` | `BigInt` | `bigint \| number` |
+| `Bytes` | `String` | `Uint8Array` |
+| `@id` fields | `ID` | `string` |
 
 ### Custom Scalar Configuration
 
@@ -643,7 +610,7 @@ Override default scalar mappings:
 
 ```prisma
 generator nestgraphql {
-  provider = "node node_modules/@pegasusheavy/nestjs-prisma-graphql"
+  provider = "nestjs-prisma-graphql"
   output   = "../src/@generated"
 
   # Custom DateTime scalar
@@ -664,7 +631,7 @@ generator nestgraphql {
 
 ```prisma
 generator nestgraphql {
-  provider = "node node_modules/@pegasusheavy/nestjs-prisma-graphql"
+  provider = "nestjs-prisma-graphql"
   output   = "../src/@generated"
 
   graphqlScalars_DateTime_name      = "GraphQLDateTime"
@@ -691,14 +658,12 @@ This generator is built from the ground up for ESM (ECMAScript Modules).
 In CommonJS, circular dependencies "just work" because modules receive a partial export object that gets filled in as the module executes. In ESM, imports are "live bindings" that reference the actual exported value—which may be `undefined` if the module hasn't finished initializing.
 
 **CommonJS behavior:**
-
 ```javascript
 // user.js imports post.js, post.js imports user.js
 // CJS: Both get a partial object that fills in later ✅
 ```
 
 **ESM behavior:**
-
 ```javascript
 // user.js imports post.js, post.js imports user.js
 // ESM: One of them gets undefined during initialization ❌
@@ -712,7 +677,7 @@ Enable `esmCompatible` mode to generate code that handles circular dependencies:
 
 ```prisma
 generator nestgraphql {
-  provider      = "node node_modules/@pegasusheavy/nestjs-prisma-graphql"
+  provider      = "nestjs-prisma-graphql"
   output        = "../src/@generated"
   esmCompatible = true
 }
@@ -727,14 +692,14 @@ When `esmCompatible` is enabled, the generator creates:
 
 #### Available Functions
 
-| Function                   | Description                                     |
-| -------------------------- | ----------------------------------------------- |
-| `registerType(name, type)` | Register a type with the registry               |
-| `getType<T>(name)`         | Get a registered type (for `@Field` decorators) |
-| `forwardRef<T>(name)`      | Create a forward reference with error handling  |
-| `lazyType<T>(name)`        | Create a lazy type thunk (safest pattern)       |
-| `isTypeRegistered(name)`   | Check if a type is registered                   |
-| `validateRegistry(types)`  | Validate expected types are registered          |
+| Function | Description |
+|----------|-------------|
+| `registerType(name, type)` | Register a type with the registry |
+| `getType<T>(name)` | Get a registered type (for `@Field` decorators) |
+| `forwardRef<T>(name)` | Create a forward reference with error handling |
+| `lazyType<T>(name)` | Create a lazy type thunk (safest pattern) |
+| `isTypeRegistered(name)` | Check if a type is registered |
+| `validateRegistry(types)` | Validate expected types are registered |
 
 #### Setup
 
@@ -782,14 +747,14 @@ registerType('User', User);
 
 The ESM-compatible output works with:
 
-| Bundler         | Status | Notes                        |
-| --------------- | ------ | ---------------------------- |
-| **esbuild**     | ✅     | Native ESM support           |
-| **Vite**        | ✅     | Uses esbuild under the hood  |
-| **Rollup**      | ✅     | With proper config           |
-| **webpack**     | ✅     | ESM output mode              |
-| **tsx/ts-node** | ✅     | With ESM loader              |
-| **Node.js**     | ✅     | v20+ with `"type": "module"` |
+| Bundler | Status | Notes |
+|---------|--------|-------|
+| **esbuild** | ✅ | Native ESM support |
+| **Vite** | ✅ | Uses esbuild under the hood |
+| **Rollup** | ✅ | With proper config |
+| **webpack** | ✅ | ESM output mode |
+| **tsx/ts-node** | ✅ | With ESM loader |
+| **Node.js** | ✅ | v20+ with `"type": "module"` |
 
 ### Debugging Circular Dependencies
 

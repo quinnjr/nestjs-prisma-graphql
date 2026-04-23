@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import type { EventArguments } from '../types.js';
+
 import { Project } from 'ts-morph';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { generateTypeRegistry } from './type-registry.js';
-import type { EventArguments } from '../types.js';
 
 describe('generateTypeRegistry', () => {
   let project: Project;
@@ -14,10 +15,12 @@ describe('generateTypeRegistry', () => {
     });
     project.createDirectory('/output');
 
+    const config = {
+      esmCompatible: true,
+    } satisfies Partial<EventArguments['config']> as EventArguments['config'];
+
     mockArgs = {
-      config: {
-        esmCompatible: true,
-      } as EventArguments['config'],
+      config,
       output: '/output',
       project,
     };
@@ -31,7 +34,10 @@ describe('generateTypeRegistry', () => {
   });
 
   it('should not generate type-registry.ts when esmCompatible is false', () => {
-    mockArgs.config = { esmCompatible: false } as EventArguments['config'];
+    const config = {
+      esmCompatible: false,
+    } satisfies Partial<EventArguments['config']> as EventArguments['config'];
+    mockArgs.config = config;
 
     generateTypeRegistry(mockArgs as EventArguments);
 

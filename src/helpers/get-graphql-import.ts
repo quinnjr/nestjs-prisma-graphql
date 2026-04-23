@@ -1,6 +1,6 @@
+import type { FieldLocation, GeneratorConfiguration } from '../types.js';
 import type { SourceFile } from 'ts-morph';
 
-import type { FieldLocation, GeneratorConfiguration } from '../types.js';
 import { fileTypeByLocation } from './file-type-by-location.js';
 import { relativePath } from './relative-path.js';
 
@@ -11,7 +11,7 @@ export function getGraphqlImport(args: {
   isId?: boolean;
   fileType?: string;
   noTypeId?: boolean;
-  getSourceFile(args: { type: string; name: string }): SourceFile;
+  getSourceFile: (args: { type: string; name: string }) => SourceFile;
   config: GeneratorConfiguration;
 }): { name: string; specifier?: string } {
   const {
@@ -48,9 +48,10 @@ export function getGraphqlImport(args: {
         return { name: 'Boolean', specifier: undefined };
       }
       case 'Decimal': {
+        // Use graphql-scalars by default for Prisma 7+ compatibility
         return {
           name: 'GraphQLDecimal',
-          specifier: 'prisma-graphql-type-decimal',
+          specifier: 'graphql-scalars',
         };
       }
       case 'Json': {

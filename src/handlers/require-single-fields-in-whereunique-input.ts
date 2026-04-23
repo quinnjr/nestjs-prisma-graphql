@@ -1,5 +1,6 @@
-import { isWhereUniqueInputType } from '../helpers/is-where-unique-input-type.js';
 import type { EventArguments, EventEmitter, InputType } from '../types.js';
+
+import { isWhereUniqueInputType } from '../helpers/is-where-unique-input-type.js';
 
 export function requireSingleFieldsInWhereUniqueInput(eventEmitter: EventEmitter): void {
   eventEmitter.on('BeforeInputType', beforeInputType);

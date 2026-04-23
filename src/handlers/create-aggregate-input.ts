@@ -13,25 +13,25 @@ export function createAggregateInput(
 
   const inputType: InputType = {
     constraints: { maxNumFields: null, minNumFields: null },
-    name: className,
     fields: outputType.fields.map(x => ({
-      name: x.name,
-      isNullable: x.isNullable ?? true,
-      isRequired: false,
       inputTypes: [
         {
           isList: false,
-          type: 'true',
           location: 'scalar',
+          type: 'true',
         },
       ],
+      isNullable: x.isNullable ?? true,
+      isRequired: false,
+      name: x.name,
     })),
+    name: className,
   };
 
   eventEmitter.emitSync('InputType', {
     ...args,
-    inputType,
-    fileType: 'input',
     classDecoratorName: 'InputType',
+    fileType: 'input',
+    inputType,
   });
 }

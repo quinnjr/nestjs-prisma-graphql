@@ -23,7 +23,7 @@ export function getPropertyType(args: {
       return ['Date', 'string'];
     }
     case 'Decimal': {
-      return ['Decimal'];
+      return ['Prisma.Decimal'];
     }
     case 'Json': {
       return ['any'];
@@ -42,7 +42,7 @@ export function getPropertyType(args: {
     return [type];
   }
   if (location === 'enumTypes') {
-    const enumType = '`${' + type + '}`';
+    const enumType = `\`\${${type}}\``;
 
     return [enumType];
   }

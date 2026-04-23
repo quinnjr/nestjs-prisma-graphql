@@ -1,7 +1,6 @@
-import { StructureKind } from 'ts-morph';
+import type { EventArguments } from '../types.js';
 
 import { relativePath } from '../helpers/relative-path.js';
-import type { EventArguments } from '../types.js';
 
 /**
  * Generate the register-all-types.ts file that imports all generated types
@@ -20,12 +19,10 @@ export function generateRegisterAllTypes(args: EventArguments): void {
     return;
   }
 
-  const rootDirectory = project.getDirectory(output) || project.createDirectory(output);
-  const sourceFile = rootDirectory.createSourceFile(
-    'register-all-types.ts',
-    undefined,
-    { overwrite: true },
-  );
+  const rootDirectory = project.getDirectory(output) ?? project.createDirectory(output);
+  const sourceFile = rootDirectory.createSourceFile('register-all-types.ts', undefined, {
+    overwrite: true,
+  });
 
   // Collect all generated source files that have registerType() calls
   const importPaths: string[] = [];
@@ -48,7 +45,7 @@ export function generateRegisterAllTypes(args: EventArguments): void {
 
     // Check if this file has a registerType() call
     const fileText = file.getText();
-    const registerMatch = fileText.match(/registerType\(['"]([^'"]+)['"]/);
+    const registerMatch = /registerType\(['"]([^'"]+)['"]/.exec(fileText);
     if (registerMatch) {
       // Get relative path from register-all-types.ts to this file
       const relPath = relativePath(sourceFile.getFilePath(), filePath);

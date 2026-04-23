@@ -23,13 +23,13 @@ describe('createComment', () => {
   it('should include deprecation reason when provided in settings', () => {
     const settings = new ObjectSettings();
     settings.push({
-      name: '',
-      kind: 'Field',
-      input: false,
-      output: false,
-      model: false,
-      from: '',
       arguments: { deprecationReason: 'Use newField instead' },
+      from: '',
+      input: false,
+      kind: 'Field',
+      model: false,
+      name: '',
+      output: false,
     });
 
     const result = createComment('Field description', settings);
@@ -79,12 +79,12 @@ describe('createComment', () => {
   it('should handle settings without Field kind', () => {
     const settings = new ObjectSettings();
     settings.push({
-      name: 'SomeDecorator',
-      kind: 'Decorator',
-      input: false,
-      output: false,
-      model: false,
       from: 'somewhere',
+      input: false,
+      kind: 'Decorator',
+      model: false,
+      name: 'SomeDecorator',
+      output: false,
     });
 
     const result = createComment('Description', settings);

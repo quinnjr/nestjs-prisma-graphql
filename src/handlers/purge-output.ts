@@ -1,13 +1,13 @@
-import { rmdirSync } from 'node:fs';
-
 import type { EventArguments, EventEmitter } from '../types.js';
+
+import { rmdirSync } from 'node:fs';
 
 export function purgeOutput(emitter: EventEmitter): void {
   emitter.on('Begin', begin);
   emitter.on('End', end);
 }
 
-function begin({ project, output }: EventArguments): void {
+function begin({ output, project }: EventArguments): void {
   const sourceFiles = project.getDirectory(output)?.getDescendantSourceFiles();
 
   if (sourceFiles) {
@@ -17,7 +17,7 @@ function begin({ project, output }: EventArguments): void {
   }
 }
 
-function end({ project, output }: EventArguments): void {
+function end({ output, project }: EventArguments): void {
   const directories = project
     .getDirectory(output)
     ?.getDescendantDirectories()

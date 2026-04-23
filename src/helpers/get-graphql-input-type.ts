@@ -1,15 +1,20 @@
+import type { DMMF } from '../types.js';
+
 import { countBy, isEqual, uniqWith } from 'lodash-es';
 import outmatch from 'outmatch';
-
-import type { DMMF } from '../types.js';
 
 /**
  * Find input type for graphql field decorator.
  */
-export function getGraphqlInputType(inputTypes: DMMF.InputTypeRef[], pattern?: string) {
+export function getGraphqlInputType(
+  inputTypes: DMMF.InputTypeRef[],
+  pattern?: string,
+): DMMF.InputTypeRef {
   let result: DMMF.InputTypeRef | undefined;
 
-  inputTypes = inputTypes.filter(t => !['null', 'Null'].includes(String(t.type)));
+  // eslint-disable-next-line no-param-reassign
+  inputTypes = inputTypes.filter(t => !['null', 'Null'].includes(t.type));
+  // eslint-disable-next-line no-param-reassign
   inputTypes = uniqWith(inputTypes, isEqual);
 
   if (inputTypes.length === 1) {
@@ -26,61 +31,61 @@ export function getGraphqlInputType(inputTypes: DMMF.InputTypeRef[], pattern?: s
     }
   }
 
-  if (pattern) {
+  if (pattern !== null && pattern !== undefined && pattern.length > 0) {
     if (pattern.startsWith('matcher:') || pattern.startsWith('match:')) {
       const { 1: patternValue } = pattern.split(':', 2);
       const isMatch = outmatch(patternValue, { separator: false });
-      result = inputTypes.find(x => isMatch(String(x.type)));
-      if (result) {
+      result = inputTypes.find(x => isMatch(x.type));
+      if (result !== undefined) {
         return result;
       }
     }
-    result = inputTypes.find(x => String(x.type).includes(pattern));
-    if (result) {
+    result = inputTypes.find(x => x.type.includes(pattern));
+    if (result !== undefined) {
       return result;
     }
   }
 
   result = inputTypes.find(x => x.location === 'inputObjectTypes');
-  if (result) {
+  if (result !== undefined) {
     return result;
   }
 
   if (
-    countTypes.enumTypes &&
-    countTypes.scalar &&
+    (countTypes.enumTypes ?? 0) > 0 &&
+    (countTypes.scalar ?? 0) > 0 &&
     inputTypes.some(x => x.type === 'Json' && x.location === 'scalar')
   ) {
     result = inputTypes.find(x => x.type === 'Json' && x.location === 'scalar');
-    if (result) {
+    if (result !== undefined) {
       return result;
     }
   }
 
   if (
-    (countTypes.scalar >= 1 || countTypes.enumTypes >= 1) &&
+    ((countTypes.scalar ?? 0) >= 1 || (countTypes.enumTypes ?? 0) >= 1) &&
     countTypes.fieldRefTypes === 1
   ) {
     result = inputTypes.find(
       x => (x.location === 'scalar' || x.location === 'enumTypes') && x.isList,
     );
 
-    if (result) {
+    if (result !== undefined) {
       return result;
     }
 
-    result = inputTypes.find(
-      x => x.location === 'scalar' || x.location === 'enumTypes',
-    );
+    result = inputTypes.find(x => x.location === 'scalar' || x.location === 'enumTypes');
 
-    if (result) {
+    if (result !== undefined) {
       return result;
     }
   }
 
   throw new TypeError(
     `Cannot get matching input type from ${
-      inputTypes.map(x => x.type).join(', ') || 'zero length inputTypes'
+      inputTypes.length > 0
+        ? inputTypes.map(x => x.type).join(', ')
+        : 'zero length inputTypes'
     }`,
   );
 }

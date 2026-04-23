@@ -1,21 +1,24 @@
+import type { createConfig } from './helpers/create-config.js';
+import type { ObjectSettings } from './helpers/object-settings.js';
 import type { DMMF } from '@prisma/generator-helper';
 import type { Project, SourceFile } from 'ts-morph';
 import type { WritableDeep } from 'type-fest';
-
-import type { createConfig } from './helpers/create-config.js';
-import type { ObjectSettings } from './helpers/object-settings.js';
 
 /**
  * Event emitter interface for type safety across ESM modules
  */
 export interface EventEmitter {
-  on(type: string | symbol, fn: Function): this;
-  once(type: string | symbol, fn: Function): this;
-  off(type: string | symbol, nullOrFn?: Function): boolean;
-  emit(type: string | symbol, ...args: unknown[]): Promise<boolean>;
-  emitSync(type: string | symbol, ...args: unknown[]): boolean;
-  removeAllListeners(): void;
-  listeners(type: string | symbol): Function[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on: (type: string | symbol, fn: (...args: any[]) => any) => this;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  once: (type: string | symbol, fn: (...args: any[]) => any) => this;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  off: (type: string | symbol, nullOrFn?: (...args: any[]) => any) => boolean;
+  emit: (type: string | symbol, ...args: unknown[]) => Promise<boolean>;
+  emitSync: (type: string | symbol, ...args: unknown[]) => boolean;
+  removeAllListeners: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  listeners: (type: string | symbol) => Array<(...args: any[]) => any>;
 }
 
 export type InputType = WritableDeep<DMMF.InputType>;
@@ -44,7 +47,7 @@ export type TypeRecord = Partial<{
 
 export type GeneratorConfiguration = ReturnType<typeof createConfig>;
 
-export type EventArguments = {
+export interface EventArguments {
   schema: Schema;
   models: Map<string, Model>;
   modelNames: string[];
@@ -53,12 +56,12 @@ export type EventArguments = {
   config: GeneratorConfiguration;
   project: Project;
   output: string;
-  getSourceFile(args: { type: string; name: string }): SourceFile;
+  getSourceFile: (args: { type: string; name: string }) => SourceFile;
   eventEmitter: EventEmitter;
   typeNames: Set<string>;
   removeTypes: Set<string>;
   enums: Record<string, DMMF.DatamodelEnum | undefined>;
-  getModelName(name: string): string | undefined;
+  getModelName: (name: string) => string | undefined;
   /**
    * Input types for this models should be decorated @Type(() => Self)
    */
@@ -68,9 +71,12 @@ export type EventArguments = {
    * Format: "ModelA:ModelB" where ModelA < ModelB alphabetically
    */
   circularDependencies: Set<string>;
-};
+}
 
-export type ImportNameSpec = { name: string; specifier?: string };
+export interface ImportNameSpec {
+  name: string;
+  specifier?: string;
+}
 
 export type Field = DMMF.Field;
 

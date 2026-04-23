@@ -1,3 +1,3 @@
-export function isWhereUniqueInputType(name: string) {
+export function isWhereUniqueInputType(name: string): boolean {
   return name.endsWith('WhereUniqueInput');
 }

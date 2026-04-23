@@ -1,13 +1,16 @@
+import type { EventArguments, SchemaEnum } from '../types.js';
+
 import { type EnumDeclarationStructure, StructureKind } from 'ts-morph';
 
 import { ImportDeclarationMap } from '../helpers/import-declaration-map.js';
-import type { EventArguments, SchemaEnum } from '../types.js';
 import { extractEnumValueDocs } from './prisma-enum-doc.js';
 
 export function registerEnum(enumType: SchemaEnum, args: EventArguments): void {
   const { config, enums, getSourceFile } = args;
 
-  if (!config.emitBlocks.prismaEnums && !enums[enumType.name]) return;
+  if (!config.emitBlocks.prismaEnums && !enums[enumType.name]) {
+    return;
+  }
 
   const dataModelEnum = enums[enumType.name];
   const enumTypesData = dataModelEnum?.values ?? [];
@@ -39,13 +42,13 @@ export function registerEnum(enumType: SchemaEnum, args: EventArguments): void {
   const valuesMapEntry = hasValuesMap ? `, valuesMap: ${formattedValuesMap}` : '';
 
   const enumStructure: EnumDeclarationStructure = {
-    kind: StructureKind.Enum,
     isExported: true,
-    name: enumType.name,
+    kind: StructureKind.Enum,
     members: enumType.values.map(v => ({
-      name: v,
       initializer: JSON.stringify(v),
+      name: v,
     })),
+    name: enumType.name,
   };
 
   sourceFile.set({

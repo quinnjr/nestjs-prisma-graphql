@@ -6,17 +6,19 @@ export function noAtomicOperations(eventEmitter: EventEmitter): void {
 }
 
 function beforeInputType(args: EventArguments & { inputType: InputType }): void {
-  const { inputType, getModelName } = args;
+  const { getModelName, inputType } = args;
 
   for (const field of inputType.fields) {
     const fieldName = field.name;
     field.inputTypes = field.inputTypes.filter(it => {
-      const inputTypeName = String(it.type);
+      const inputTypeName = it.type;
       const modelName = getModelName(inputTypeName);
 
+      const isModelNameValid =
+        modelName !== null && modelName !== undefined && modelName.length > 0;
       if (
         isAtomicOperation(inputTypeName) ||
-        (modelName && isListInput(inputTypeName, modelName, fieldName))
+        (isModelNameValid && isListInput(inputTypeName, modelName, fieldName))
       ) {
         return false;
       }
@@ -31,7 +33,9 @@ function beforeGenerateFiles(args: EventArguments): void {
   for (const sourceFile of project.getSourceFiles()) {
     const className = sourceFile.getClass(() => true)?.getName();
 
-    if (className && isAtomicOperation(className)) {
+    const isClassNameValid =
+      className !== undefined && className !== null && className.length > 0;
+    if (isClassNameValid && isAtomicOperation(className)) {
       project.removeSourceFile(sourceFile);
     }
   }

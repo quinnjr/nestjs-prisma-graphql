@@ -1,11 +1,11 @@
+import type { GeneratorConfiguration } from '../types.js';
+import type { PlainObject } from 'simplytyped';
+
 import JSON5 from 'json5';
 import { isObject, merge, omit, trim } from 'lodash-es';
 import outmatch from 'outmatch';
-import type { PlainObject } from 'simplytyped';
 
-import type { GeneratorConfiguration } from '../types.js';
-
-export type ObjectSetting = {
+export interface ObjectSetting {
   /**
    * Act as named import or namespaceImport or defaultImport
    */
@@ -21,7 +21,7 @@ export type ObjectSetting = {
   defaultImport?: string | true;
   namespaceImport?: string;
   namedImport?: boolean;
-};
+}
 
 interface ObjectSettingsFilterArgs {
   name: string;
@@ -30,23 +30,23 @@ interface ObjectSettingsFilterArgs {
 }
 
 export class ObjectSettings extends Array<ObjectSetting> {
-  shouldHideField({
-    name,
+  public shouldHideField({
     input = false,
+    name,
     output = false,
   }: ObjectSettingsFilterArgs): boolean {
     const hideField = this.find(s => s.name === 'HideField');
 
     return Boolean(
       (hideField?.input && input) ||
-        (hideField?.output && output) ||
-        hideField?.match?.(name),
+      (hideField?.output && output) ||
+      hideField?.match?.(name),
     );
   }
 
-  getFieldType({
-    name,
+  public getFieldType({
     input,
+    name,
     output,
   }: ObjectSettingsFilterArgs): ObjectSetting | undefined {
     const fieldType = this.find(s => s.kind === 'FieldType');
@@ -70,9 +70,9 @@ export class ObjectSettings extends Array<ObjectSetting> {
     return fieldType;
   }
 
-  getPropertyType({
-    name,
+  public getPropertyType({
     input,
+    name,
     output,
   }: ObjectSettingsFilterArgs): ObjectSetting | undefined {
     const propertyType = this.find(s => s.kind === 'PropertyType');
@@ -96,32 +96,33 @@ export class ObjectSettings extends Array<ObjectSetting> {
     return propertyType;
   }
 
-  getObjectTypeArguments(options: Record<string, unknown>): string[] {
+  public getObjectTypeArguments(options: Record<string, unknown>): string[] {
     const objectTypeOptions = merge({}, options);
     const resultArguments: unknown[] = [objectTypeOptions];
     const objectType = this.find(s => s.kind === 'ObjectType');
     if (objectType && isObject(objectType.arguments)) {
-      const name = (objectType.arguments as PlainObject).name;
+      const { name } = objectType.arguments as PlainObject;
       merge(objectTypeOptions, omit(objectType.arguments, 'name'));
-      if (name) {
+      if (name !== null && name !== undefined && name !== '') {
         resultArguments.unshift(name);
       }
     }
     return resultArguments.map(x => JSON5.stringify(x));
   }
 
-  fieldArguments(): Record<string, unknown> | undefined {
-    const item = this.find(item => item.kind === 'Field');
-    if (item) {
-      return item.arguments as Record<string, unknown>;
+  public fieldArguments(): Record<string, unknown> | undefined {
+    const fieldItem = this.find(item => item.kind === 'Field');
+    if (fieldItem) {
+      return fieldItem.arguments as Record<string, unknown>;
     }
+    return undefined;
   }
 }
 
 export function createObjectSettings(args: {
   text: string;
   config: GeneratorConfiguration;
-}) {
+}): { documentation: string | undefined; settings: ObjectSettings } {
   const { config, text } = args;
   const result = new ObjectSettings();
   const textLines = text.split('\n');
@@ -129,19 +130,24 @@ export function createObjectSettings(args: {
 
   let fieldElement = result.find(item => item.kind === 'Field');
   if (!fieldElement) {
-    fieldElement = {
-      name: '',
-      kind: 'Field',
+    const newFieldElement: ObjectSetting = {
       arguments: {},
-    } as ObjectSetting;
+      from: '',
+      input: false,
+      kind: 'Field',
+      model: false,
+      name: '',
+      output: false,
+    };
+    fieldElement = newFieldElement;
   }
 
   for (const line of textLines) {
     const match = /^@(?<name>\w+(\.(\w+))?)\((?<args>.*)\)/.exec(line);
-    const { element, documentLine } = createSettingElement({
-      line,
+    const { documentLine, element } = createSettingElement({
       config,
       fieldElement,
+      line,
       match,
     });
 
@@ -155,59 +161,76 @@ export function createObjectSettings(args: {
   }
 
   return {
-    settings: result,
     documentation: documentationLines.filter(Boolean).join('\n') || undefined,
+    settings: result,
   };
 }
 
 function createSettingElement({
-  line,
   config,
   fieldElement,
+  line,
   match,
 }: {
   line: string;
   config: GeneratorConfiguration;
   fieldElement: ObjectSetting;
   match: RegExpExecArray | null;
-}) {
+}): { documentLine: string; element: ObjectSetting | undefined } {
   const result = {
     documentLine: '',
     element: undefined as ObjectSetting | undefined,
   };
   if (line.startsWith('@deprecated')) {
-    (fieldElement.arguments as Record<string, unknown>)['deprecationReason'] = trim(line.slice(11));
+    const DEPRECATED_PREFIX_LENGTH = 11;
+    const updatedFieldElement = {
+      ...fieldElement,
+      arguments: {
+        ...(fieldElement.arguments as Record<string, unknown>),
+        deprecationReason: trim(line.slice(DEPRECATED_PREFIX_LENGTH)),
+      },
+    };
 
-    result.element = fieldElement;
+    result.element = updatedFieldElement;
 
     return result;
   }
 
   if (line.startsWith('@complexity')) {
-    let n = Number.parseInt(trim(line.slice(11)));
-    if (n !== n || n < 1) n = 1;
-    (fieldElement.arguments as Record<string, unknown>)['complexity'] = n;
+    const COMPLEXITY_PREFIX_LENGTH = 11;
+    const MIN_COMPLEXITY = 1;
+    let n = Number.parseInt(trim(line.slice(COMPLEXITY_PREFIX_LENGTH)), 10);
+    if (Number.isNaN(n) || n < MIN_COMPLEXITY) {
+      n = MIN_COMPLEXITY;
+    }
+    const updatedFieldElement = {
+      ...fieldElement,
+      arguments: {
+        ...(fieldElement.arguments as Record<string, unknown>),
+        complexity: n,
+      },
+    };
 
-    result.element = fieldElement;
+    result.element = updatedFieldElement;
 
     return result;
   }
 
   const name = match?.groups?.name;
 
-  if (!(match && name)) {
+  if (!(match && name !== undefined && name !== '')) {
     result.documentLine = line;
     return result;
   }
 
   const element: ObjectSetting = {
-    kind: 'Decorator',
-    name: '',
     arguments: [],
-    input: false,
-    output: false,
-    model: false,
     from: '',
+    input: false,
+    kind: 'Decorator',
+    model: false,
+    name: '',
+    output: false,
   };
 
   result.element = element;
@@ -218,40 +241,56 @@ function createSettingElement({
     return result;
   }
 
-  if (['FieldType', 'PropertyType'].includes(name) && match.groups?.args) {
+  if (
+    ['FieldType', 'PropertyType'].includes(name) &&
+    match.groups?.args !== undefined &&
+    match.groups.args !== ''
+  ) {
     const options = customType(match.groups.args);
-    merge(element, options.namespace && config.fields[options.namespace], options, {
+    const namespaceConfig =
+      options.namespace !== undefined && options.namespace !== ''
+        ? config.fields[options.namespace]
+        : undefined;
+    merge(element, namespaceConfig, options, {
       kind: name,
     });
     return result;
   }
 
-  if (name === 'ObjectType' && match.groups?.args) {
+  if (
+    name === 'ObjectType' &&
+    match.groups?.args !== undefined &&
+    match.groups.args !== ''
+  ) {
     element.kind = 'ObjectType';
     const options = customType(match.groups.args) as Record<string, unknown>;
-    if (typeof options[0] === 'string' && options[0]) {
+    if (typeof options[0] === 'string' && options[0] !== '') {
       options.name = options[0];
     }
     if (isObject(options[1])) {
       merge(options, options[1]);
     }
     element.arguments = {
-      name: options.name,
       isAbstract: options.isAbstract,
+      name: options.name,
     };
 
     return result;
   }
 
-  if (name === 'Directive' && match.groups?.args) {
+  if (
+    name === 'Directive' &&
+    match.groups?.args !== undefined &&
+    match.groups.args !== ''
+  ) {
     const options = customType(match.groups.args);
-    merge(element, { model: true, from: '@nestjs/graphql' }, options, {
-      name,
-      namespace: false,
-      kind: 'Decorator',
+    merge(element, { from: '@nestjs/graphql', model: true }, options, {
       arguments: Array.isArray(options.arguments)
         ? options.arguments.map(s => JSON5.stringify(s))
         : options.arguments,
+      kind: 'Decorator',
+      name,
+      namespace: false,
     });
 
     return result;
@@ -259,19 +298,22 @@ function createSettingElement({
 
   const namespace = getNamespace(name);
   element.namespaceImport = namespace;
+  const args = match.groups?.args ?? '';
   const options = {
-    name,
-    arguments: (match.groups?.args || '')
+    arguments: args
       .split(',')
       .map(s => trim(s))
       .filter(Boolean),
+    name,
   };
-  merge(element, namespace && config.fields[namespace], options);
+  const namespaceConfig =
+    namespace !== undefined && namespace !== '' ? config.fields[namespace] : undefined;
+  merge(element, namespaceConfig, options);
 
   return result;
 }
 
-function customType(args: string) {
+function customType(args: string): Partial<ObjectSetting> {
   const result: Partial<ObjectSetting> = {};
   let options = parseArgs(args);
   if (typeof options === 'string') {
@@ -280,7 +322,12 @@ function customType(args: string) {
   Object.assign(result, options);
   const namespace = getNamespace(options.name);
   result.namespace = namespace;
-  if ((options as { name: string | undefined }).name?.includes('.')) {
+  const optionsWithName = options as { name: string | undefined };
+  if (
+    optionsWithName.name !== undefined &&
+    optionsWithName.name !== '' &&
+    optionsWithName.name.includes('.')
+  ) {
     result.namespaceImport = namespace;
   }
 
@@ -291,32 +338,33 @@ function customType(args: string) {
   return result;
 }
 
-function hideFieldDecorator(match: RegExpExecArray) {
+function hideFieldDecorator(match: RegExpExecArray): Partial<ObjectSetting> {
   const result: Partial<ObjectSetting> = {
-    name: 'HideField',
     arguments: [],
-    from: '@nestjs/graphql',
     defaultImport: undefined,
-    namespaceImport: undefined,
+    from: '@nestjs/graphql',
     match: undefined,
+    name: 'HideField',
+    namespaceImport: undefined,
   };
-  if (!match.groups?.args) {
+  const args = match.groups?.args;
+  if (args === undefined || args === '') {
     result.output = true;
     return result;
   }
 
-  if (match.groups.args.includes('{') && match.groups.args.includes('}')) {
-    const options = parseArgs(match.groups.args) as Record<string, unknown>;
+  if (args.includes('{') && args.includes('}')) {
+    const options = parseArgs(args) as Record<string, unknown>;
     result.output = Boolean(options.output);
     result.input = Boolean(options.input);
     if (typeof options.match === 'string' || Array.isArray(options.match)) {
       result.match = outmatch(options.match, { separator: false });
     }
   } else {
-    if (/output:\s*true/.test(match.groups.args)) {
+    if (/output:\s*true/.test(args)) {
       result.output = true;
     }
-    if (/input:\s*true/.test(match.groups.args)) {
+    if (/input:\s*true/.test(args)) {
       result.input = true;
     }
   }
@@ -337,12 +385,22 @@ function parseArgs(string: string): Record<string, unknown> | string {
 }
 
 function getNamespace(name: unknown): string | undefined {
-  if (name === undefined) {
+  if (name === undefined || name === null) {
     return undefined;
   }
-  let result = String(name);
+  if (typeof name !== 'string') {
+    return undefined;
+  }
+  let result = name;
+  if (result === '') {
+    return undefined;
+  }
   if (result.includes('.')) {
-    [result] = result.split('.');
+    const parts = result.split('.');
+    result = parts[0] ?? '';
+  }
+  if (result === '') {
+    return undefined;
   }
   return result;
 }

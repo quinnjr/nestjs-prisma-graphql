@@ -12,7 +12,7 @@ export function generateFileName(args: {
   const { getModelName, name, template, type } = args;
 
   const rawPath = pupa(template, {
-    get model(): string {
+    get model() {
       const result = getModelName(name) ?? 'prisma';
       return kebabCase(result);
     },
@@ -36,9 +36,8 @@ export function generateFileName(args: {
   });
 
   // Apply filenamify to each path segment after template expansion
-  // Use maxLength: 255 (actual OS limit on ext4, NTFS, and HFS+)
   return rawPath
     .split('/')
-    .map(segment => filenamify(segment, { maxLength: 255, replacement: '-' }))
+    .map(segment => filenamify(segment, { replacement: '-' }))
     .join('/');
 }
