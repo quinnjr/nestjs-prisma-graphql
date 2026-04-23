@@ -152,9 +152,15 @@ export function inputType(
 
     if (propertySettings) {
       importDeclarations.create({ ...propertySettings });
-    } else if (propertyType.some((p: string) => p.includes('Prisma.Decimal'))) {
+    } else if (
+      propertyType.some(
+        (p: string) => typeof p === 'string' && p.includes('Prisma.Decimal'),
+      )
+    ) {
       importDeclarations.add('Prisma', config.prismaClientImport);
-    } else if (propertyType.some((p: string) => p.startsWith('Prisma.'))) {
+    } else if (
+      propertyType.some((p: string) => typeof p === 'string' && p.startsWith('Prisma.'))
+    ) {
       importDeclarations.add('Prisma', config.prismaClientImport);
     }
 
