@@ -1,4 +1,4 @@
-/* eslint-disable no-console, @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unused-vars, @typescript-eslint/no-unsafe-enum-comparison */
+/* eslint-disable no-console, @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-enum-comparison */
 import type { EventArguments } from '../types.js';
 
 /**
@@ -15,21 +15,25 @@ export function generateBarrelExports(args: EventArguments): void {
   const { config, output, project } = args;
 
   // Only generate barrels when ESM compatible and no automatic re-export
-  if (!config.esmCompatible || String(config.reExport) !== 'None') {
+  if (!config.esmCompatible || config.reExport !== 'None') {
     return;
   }
 
   const rootDirectory = project.getDirectory(output);
   if (!rootDirectory) {
-    console.warn('nestjs-prisma-graphql: output directory not found, skipping barrel generation');
+    console.warn(
+      'nestjs-prisma-graphql: output directory not found, skipping barrel generation',
+    );
     return;
   }
 
-  const _extension = config.outputFilePattern?.includes('.js') ? '.js' : '.ts';
+  const _extension = config.outputFilePattern?.includes('.js') ? '.js' : '.ts'; // eslint-disable-line @typescript-eslint/no-unnecessary-condition
   const subdirs = rootDirectory.getDirectories();
   let barrelCount = 0;
 
-  console.log(`nestjs-prisma-graphql: found ${subdirs.length} subdirectories for barrel generation`);
+  console.log(
+    `nestjs-prisma-graphql: found ${subdirs.length} subdirectories for barrel generation`,
+  );
 
   // Create index file in each subdirectory
   for (const dir of subdirs) {
@@ -52,17 +56,16 @@ export function generateBarrelExports(args: EventArguments): void {
         continue;
       }
 
+      // Replace extension with .js for ESM
+      const fileNameWithJsExt = fileName.replace(/\.ts$/, '.js');
+
       // Add export statement
-      exports.push(`export * from './${fileName}';`);
+      exports.push(`export * from './${fileNameWithJsExt}';`);
     }
 
     if (exports.length > 0) {
       exports.sort();
-      dir.createSourceFile(
-        `index.ts`,
-        `${exports.join('\n')  }\n`,
-        { overwrite: true },
-      );
+      dir.createSourceFile(`index.ts`, `${exports.join('\n')}\n`, { overwrite: true });
       barrelCount++;
     }
   }
@@ -81,11 +84,9 @@ export function generateBarrelExports(args: EventArguments): void {
 
   if (rootExports.length > 0) {
     rootExports.sort();
-    rootDirectory.createSourceFile(
-      'index.ts',
-      `${rootExports.join('\n')  }\n`,
-      { overwrite: true },
-    );
+    rootDirectory.createSourceFile('index.ts', `${rootExports.join('\n')}\n`, {
+      overwrite: true,
+    });
     barrelCount++;
   }
 
