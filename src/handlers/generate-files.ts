@@ -113,9 +113,7 @@ export async function generateFiles(args: EventArguments): Promise<void> {
   const sourceFileCount = sourceFiles.length;
   // Type-safe console logging
   type ConsoleLogFunction = (message?: unknown, ...optionalParams: unknown[]) => void;
-  const globalConsole: { log: ConsoleLogFunction } = globalThis.console as {
-    log: ConsoleLogFunction;
-  };
+  const globalConsole: { log: ConsoleLogFunction } = globalThis.console;
   const logMessage = (msg: string): void => {
     globalConsole.log(msg);
   };

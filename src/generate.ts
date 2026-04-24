@@ -40,12 +40,15 @@ import { combineScalarFilters } from './handlers/combine-scalar-filters.js';
 import { createAggregateInput } from './handlers/create-aggregate-input.js';
 import { generateDecimalHelpers } from './handlers/decimal-helpers.js';
 import { emitSingle } from './handlers/emit-single.js';
+import { generateBarrelExports } from './handlers/generate-barrel-exports.js';
 import { generateFiles } from './handlers/generate-files.js';
 import { inputType } from './handlers/input-type.js';
 import { modelData } from './handlers/model-data.js';
 import { modelOutputType } from './handlers/model-output-type.js';
 import { noAtomicOperations } from './handlers/no-atomic-operations.js';
 import { outputType } from './handlers/output-type.js';
+import { patchTypeRegistry } from './handlers/patch-type-registry.js';
+import { postProcessImports } from './handlers/post-process-imports.js';
 import { purgeOutput } from './handlers/purge-output.js';
 import { ReExport, reExport } from './handlers/re-export.js';
 import { generateRegisterAllTypes } from './handlers/register-all-types.js';
@@ -255,9 +258,20 @@ export async function generate(
     }
   }
 
-  // Generate register-all-types.ts for ESM compatibility
-  // Must be after all types are generated so it can find all files with registerType()
+  // Pre-save processing steps for ESM compatibility
+  // Must run BEFORE GenerateFiles so created files are included in the save
   if (config.esmCompatible) {
+    // 1. Generate barrel exports (index.ts files) if reExport="None"
+    generateBarrelExports(eventArguments);
+
+    // 2. Add .js extensions and convert type imports for ESM
+    postProcessImports(eventArguments);
+
+    // 3. Patch type-registry and add @ts-nocheck
+    patchTypeRegistry(eventArguments);
+
+    // 4. Generate register-all-types file
+    // Must be last so it can scan all final files with registerType()
     generateRegisterAllTypes(eventArguments);
   }
 
