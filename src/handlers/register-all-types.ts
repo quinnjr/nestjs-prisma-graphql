@@ -48,7 +48,11 @@ export function generateRegisterAllTypes(args: EventArguments): void {
     const registerMatch = /registerType\(['"]([^'"]+)['"]/.exec(fileText);
     if (registerMatch) {
       // Get relative path from register-all-types.ts to this file
-      const relPath = relativePath(sourceFile.getFilePath(), filePath);
+      let relPath = relativePath(sourceFile.getFilePath(), filePath);
+      // Add .js extension for ESM module resolution
+      if (!relPath.endsWith('.js')) {
+        relPath += '.js';
+      }
       importPaths.push(relPath);
       typeNames.push(registerMatch[1]);
     }

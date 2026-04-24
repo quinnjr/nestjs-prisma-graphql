@@ -82,10 +82,14 @@ export function inputType(
 
   // Add type registry imports if ESM compatible mode is enabled
   if (config.esmCompatible) {
-    const typeRegistryPath = relativePath(
+    let typeRegistryPath = relativePath(
       sourceFile.getFilePath(),
       `${output}/type-registry.ts`,
     );
+    // Add .js extension for ESM module resolution
+    if (!typeRegistryPath.endsWith('.js')) {
+      typeRegistryPath += '.js';
+    }
     importDeclarations.add('registerType', typeRegistryPath);
     importDeclarations.add('getType', typeRegistryPath);
   }
@@ -271,10 +275,14 @@ export function inputType(
       if (graphqlType === 'GraphQLDecimal') {
         // Import from generated decimal-helpers.ts instead of prisma-graphql-type-decimal
         // This provides Prisma 7+ compatibility
-        const decimalHelpersPath = relativePath(
+        let decimalHelpersPath = relativePath(
           sourceFile.getFilePath(),
           `${output}/decimal-helpers.ts`,
         );
+        // Add .js extension for ESM module resolution
+        if (config.esmCompatible && !decimalHelpersPath.endsWith('.js')) {
+          decimalHelpersPath += '.js';
+        }
         importDeclarations.add('transformToDecimal', decimalHelpersPath);
         importDeclarations.add('Transform', 'class-transformer');
         importDeclarations.add('Type', 'class-transformer');

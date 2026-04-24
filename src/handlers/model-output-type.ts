@@ -103,10 +103,14 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
 
   // Add type registry imports if ESM compatible mode is enabled
   if (config.esmCompatible) {
-    const typeRegistryPath = relativePath(
+    let typeRegistryPath = relativePath(
       sourceFile.getFilePath(),
       `${output}/type-registry.ts`,
     );
+    // Add .js extension for ESM module resolution
+    if (!typeRegistryPath.endsWith('.js')) {
+      typeRegistryPath += '.js';
+    }
     importDeclarations.add('registerType', typeRegistryPath);
     importDeclarations.add('getType', typeRegistryPath);
   }

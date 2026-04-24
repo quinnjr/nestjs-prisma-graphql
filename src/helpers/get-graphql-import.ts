@@ -67,13 +67,18 @@ export function getGraphqlImport(args: {
     sourceFileType = 'model';
   }
 
-  const specifier = relativePath(
+  let specifier = relativePath(
     sourceFile.getFilePath(),
     getSourceFile({
       name: typeName,
       type: sourceFileType,
     }).getFilePath(),
   );
+
+  // In ESM mode, add .js extension for module resolution
+  if (config.esmCompatible && !specifier.startsWith('@') && !specifier.endsWith('.js')) {
+    specifier += '.js';
+  }
 
   return { name: typeName, specifier };
 }
