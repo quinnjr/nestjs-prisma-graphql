@@ -192,7 +192,8 @@ export class UserResolver {
 |--------|------|---------|-------------|
 | `output` | `string` | *required* | Output folder relative to the schema file |
 | `outputFilePattern` | `string` | `{model}/{name}.{type}.ts` | Pattern for generated file paths |
-| `esmCompatible` | `boolean` | `true` | Enable ESM circular import resolution |
+| `esmCompatible` | `boolean` | `true` | Enable ESM circular import resolution with type registry |
+| `esmSuppressTypeErrors` | `boolean` | `false` | Add `// @ts-nocheck` to generated files (useful for deep relation filename truncation) |
 | `prismaClientImport` | `string` | `@prisma/client` | Custom path to Prisma Client |
 | `tsConfigFilePath` | `string` | - | Path to tsconfig.json for type checking |
 | `disabled` | `boolean` | `false` | Disable generation (can also use env vars) |
@@ -677,18 +678,28 @@ Enable `esmCompatible` mode to generate code that handles circular dependencies:
 
 ```prisma
 generator nestgraphql {
-  provider      = "nestjs-prisma-graphql"
-  output        = "../src/@generated"
-  esmCompatible = true
+  provider              = "nestjs-prisma-graphql"
+  output                = "../src/@generated"
+  esmCompatible         = true
+  esmSuppressTypeErrors = false  # Set true if you hit filename truncation on deep relations
 }
 ```
 
 ### Type Registry
 
-When `esmCompatible` is enabled, the generator creates:
+When `esmCompatible` is enabled, the generator automatically handles:
 
-1. **`type-registry.ts`** — Central registry with lazy type resolution helpers
-2. **`register-all-types.ts`** — Registers all types at application startup
+1. **Type Registry** — Creates `type-registry.ts` with lazy type resolution helpers
+2. **Type Registration** — Generates `register-all-types.js` that imports all types
+3. **ESM Import Resolution** — Adds `.js` extensions to all relative imports
+4. **Barrel Exports** — Creates `index.ts` files when `reExport = "None"`
+5. **TypeScript Compatibility** — Patches `getType<T = any>` for `@nestjs/graphql`
+
+**No post-processing scripts needed** — the generator handles everything internally when `esmCompatible = true`.
+
+#### Generated Files
+
+The generator creates:
 
 #### Available Functions
 
