@@ -6,7 +6,7 @@ import { ok as assertOk } from 'node:assert';
  * while preserving the assertion behavior.
  */
 export function ok(value: unknown, message?: string): asserts value {
-  (assertOk as (value: unknown, message?: string | Error) => asserts value)(
+  (assertOk)(
     value,
     message,
   );

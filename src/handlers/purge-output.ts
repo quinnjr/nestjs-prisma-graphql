@@ -4,7 +4,7 @@ import { rmdirSync as rmdirSyncOriginal } from 'node:fs';
 
 // Type-safe wrapper for rmdirSync
 type RmdirFunction = (path: string) => void;
-const rmdirTyped: RmdirFunction = rmdirSyncOriginal as RmdirFunction;
+const rmdirTyped: RmdirFunction = rmdirSyncOriginal;
 const rmdirSync: RmdirFunction = (path: string): void => {
   rmdirTyped(path);
 };
