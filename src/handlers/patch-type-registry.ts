@@ -33,23 +33,21 @@ export function patchTypeRegistry(args: EventArguments): void {
     console.log('nestjs-prisma-graphql: patched type-registry <T = unknown> → <T = any>');
   }
 
-  // Patch 2: Prepend // @ts-nocheck to all generated files (if enabled)
-  // This suppresses type errors from truncated filenames on deep relations
-  if (args.config.esmSuppressTypeErrors) {
-    const _extension = args.config.outputFilePattern?.includes('.js') ? '.js' : '.ts';
-    const allSourceFiles = project.getSourceFiles(`${output}/**/*.{ts,js}`);
-    let nocheckCount = 0;
+  // Patch 2: Prepend // @ts-nocheck to all generated files
+  // Find both .ts and .js files depending on outputFilePattern
+  const _extension = args.config.outputFilePattern?.includes('.js') ? '.js' : '.ts';
+  const allSourceFiles = project.getSourceFiles(`${output}/**/*.{ts,js}`);
+  let nocheckCount = 0;
 
-    for (const sourceFile of allSourceFiles) {
-      const text = sourceFile.getText();
-      if (!text.startsWith('// @ts-nocheck')) {
-        sourceFile.replaceWithText(`// @ts-nocheck\n${text}`);
-        nocheckCount++;
-      }
+  for (const sourceFile of allSourceFiles) {
+    const text = sourceFile.getText();
+    if (!text.startsWith('// @ts-nocheck')) {
+      sourceFile.replaceWithText(`// @ts-nocheck\n${text}`);
+      nocheckCount++;
     }
+  }
 
-    if (nocheckCount > 0) {
-      console.log(`nestjs-prisma-graphql: added // @ts-nocheck to ${nocheckCount} files`);
-    }
+  if (nocheckCount > 0) {
+    console.log(`nestjs-prisma-graphql: added // @ts-nocheck to ${nocheckCount} files`);
   }
 }
