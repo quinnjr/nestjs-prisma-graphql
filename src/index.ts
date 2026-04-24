@@ -29,7 +29,9 @@ gracefulFs.gracefulify(nodeFs);
 // process crashes before sending a response, Prisma may report success.
 type LogFunction = (msg: string) => void;
 type ConsoleLogFunction = (message?: unknown, ...optionalParams: unknown[]) => void;
-const globalConsole: { log: ConsoleLogFunction } = globalThis.console;
+const globalConsole: { log: ConsoleLogFunction } = globalThis.console as {
+  log: ConsoleLogFunction;
+};
 const logError: LogFunction = (msg: string): void => {
   globalConsole.log(msg);
 };
@@ -161,7 +163,9 @@ function countFilesRecursive(dir: string): number {
 
 type LogFunc = (msg: string) => void;
 type ConsoleLogFunc = (message?: unknown, ...optionalParams: unknown[]) => void;
-const globalConsole2: { log: ConsoleLogFunc } = globalThis.console;
+const globalConsole2: { log: ConsoleLogFunc } = globalThis.console as {
+  log: ConsoleLogFunc;
+};
 const log: LogFunc = (msg: string): void => {
   globalConsole2.log(msg);
 };
@@ -181,8 +185,8 @@ generatorHandler({
     // Type-safe wrappers for node:os functions
     type ArchFunction = () => unknown;
     type PlatformFunction = () => unknown;
-    const archTyped: ArchFunction = arch;
-    const platformTyped: PlatformFunction = platform;
+    const archTyped: ArchFunction = arch as ArchFunction;
+    const platformTyped: PlatformFunction = platform as PlatformFunction;
 
     const archValue = String(archTyped());
     const platformValue = String(platformTyped());
@@ -222,7 +226,7 @@ generatorHandler({
 
     // Type-safe wrapper for existsSync
     type ExistsSyncFunc = (path: string) => boolean;
-    const existsSyncTyped: ExistsSyncFunc = existsSync;
+    const existsSyncTyped: ExistsSyncFunc = existsSync as ExistsSyncFunc;
     const pathExists: boolean =
       typeof outputPath === 'string' &&
       outputPath !== '<unknown>' &&

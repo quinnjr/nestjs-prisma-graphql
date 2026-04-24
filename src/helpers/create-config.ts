@@ -55,7 +55,7 @@ export function createConfig(data: Record<string, unknown>): {
   unsafeCompatibleWhereUniqueInput: boolean;
   useInputType: ConfigInputItem[];
 } {
-  const config = merge({}, unflatten(data, { delimiter: '_' }));
+  const config = merge({}, unflatten(data, { delimiter: '_' })) as Record<string, unknown>;
   const $warnings: string[] = [];
 
   const defaultPattern = `{model}/{name}.{type}.ts`;

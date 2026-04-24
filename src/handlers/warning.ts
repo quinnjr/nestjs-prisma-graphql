@@ -1,7 +1,9 @@
 // Type-safe console.log wrapper
 type LogFunction = (msg: string) => void;
 type ConsoleLogFunction = (message?: unknown, ...optionalParams: unknown[]) => void;
-const globalConsole: { log: ConsoleLogFunction } = globalThis.console;
+const globalConsole: { log: ConsoleLogFunction } = globalThis.console as {
+  log: ConsoleLogFunction;
+};
 const log: LogFunction = (msg: string): void => {
   globalConsole.log(msg);
 };
