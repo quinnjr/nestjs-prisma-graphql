@@ -19,10 +19,10 @@ export function registerEnum(enumType: SchemaEnum, args: EventArguments): void {
   }
 
   const dataModelEnum = enumValue;
-  const enumTypesData = (dataModelEnum?.values ?? []) as Array<{
-    name: string;
-    documentation?: string;
-  }>;
+  const enumTypesData = (dataModelEnum?.values ?? []).map(v => ({
+    name: v.name,
+    documentation: undefined as string | undefined,
+  }));
   const sourceFile = getSourceFile({
     name: enumName,
     type: 'enum',

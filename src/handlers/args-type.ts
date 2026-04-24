@@ -63,6 +63,7 @@ export function argsType(field: SchemaField, args: EventArguments): void {
         ],
         isNullable: true,
         isRequired: false,
+        isParameterizable: false,
         name: `_${name.toLowerCase()}`,
       });
     }

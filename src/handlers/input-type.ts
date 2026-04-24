@@ -134,7 +134,7 @@ export function inputType(
           location,
           type: typeName,
         }),
-    );
+    ).filter((p): p is string => typeof p === 'string');
 
     const hasExclamationToken = Boolean(
       isWhereUnique &&
@@ -158,12 +158,12 @@ export function inputType(
       importDeclarations.create({ ...propertySettings });
     } else if (
       propertyType.some(
-        (p: string) => typeof p === 'string' && p.includes('Prisma.Decimal'),
+        p => p.includes('Prisma.Decimal'),
       )
     ) {
       importDeclarations.add('Prisma', config.prismaClientImport);
     } else if (
-      propertyType.some((p: string) => typeof p === 'string' && p.startsWith('Prisma.'))
+      propertyType.some(p => p.startsWith('Prisma.'))
     ) {
       importDeclarations.add('Prisma', config.prismaClientImport);
     }

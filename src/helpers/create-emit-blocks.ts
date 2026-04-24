@@ -32,7 +32,7 @@ export function createEmitBlocks(data?: string[]): Record<EmittedBlockType, bool
     return allBlocks;
   }
 
-  const initialBlocks: Record<EmittedBlockType, boolean> = {};
+  const initialBlocks: Record<EmittedBlockType, boolean> = {} as Record<EmittedBlockType, boolean>;
   let currentBlocks = initialBlocks;
 
   for (const block of data) {

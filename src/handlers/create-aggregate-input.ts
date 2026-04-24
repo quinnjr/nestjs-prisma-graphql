@@ -23,6 +23,7 @@ export function createAggregateInput(
       ],
       isNullable: x.isNullable ?? true,
       isRequired: false,
+      isParameterizable: false,
       name: x.name,
     })),
     name: className,
