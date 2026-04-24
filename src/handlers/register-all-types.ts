@@ -20,16 +20,24 @@ export function generateRegisterAllTypes(args: EventArguments): void {
   }
 
   const rootDirectory = project.getDirectory(output) ?? project.createDirectory(output);
-  const sourceFile = rootDirectory.createSourceFile('register-all-types.ts', undefined, {
-    overwrite: true,
-  });
+
+  // Use .js extension if outputFilePattern uses .js, otherwise .ts
+  const extension = config.outputFilePattern?.includes('.js') ? '.js' : '.ts';
+  const sourceFile = rootDirectory.createSourceFile(
+    `register-all-types${extension}`,
+    undefined,
+    {
+      overwrite: true,
+    },
+  );
 
   // Collect all generated source files that have registerType() calls
   const importPaths: string[] = [];
   const typeNames: string[] = [];
 
   // Get all source files in the output directory
-  const allSourceFiles = project.getSourceFiles(`${output}/**/*.ts`);
+  // Support both .ts (default) and .js (when outputFilePattern uses .js)
+  const allSourceFiles = project.getSourceFiles(`${output}/**/*.{ts,js}`);
 
   for (const file of allSourceFiles) {
     const filePath = file.getFilePath();
