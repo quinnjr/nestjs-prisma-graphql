@@ -41,7 +41,6 @@ export function createConfig(data: Record<string, unknown>): {
   emitCompiled: boolean;
   emitSingle: boolean;
   esmCompatible: boolean;
-  esmSuppressTypeErrors: boolean;
   fields: Record<string, ConfigFieldSetting | undefined>;
   graphqlScalars: Record<string, ImportNameSpec | undefined>;
   noAtomicOperations: boolean;
@@ -56,7 +55,7 @@ export function createConfig(data: Record<string, unknown>): {
   unsafeCompatibleWhereUniqueInput: boolean;
   useInputType: ConfigInputItem[];
 } {
-  const config = merge({}, unflatten(data, { delimiter: '_' }));
+  const config = merge({}, unflatten(data, { delimiter: '_' })) as Record<string, unknown>;
   const $warnings: string[] = [];
 
   const defaultPattern = `{model}/{name}.{type}.ts`;
@@ -177,7 +176,6 @@ export function createConfig(data: Record<string, unknown>): {
     emitCompiled: toBoolean(config.emitCompiled),
     emitSingle: toBoolean(config.emitSingle),
     esmCompatible: toBoolean(config.esmCompatible),
-    esmSuppressTypeErrors: toBoolean(config.esmSuppressTypeErrors),
     fields,
     graphqlScalars: (config.graphqlScalars ?? {}) as Record<
       string,
