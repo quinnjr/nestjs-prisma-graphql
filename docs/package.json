@@ -37,7 +37,7 @@
     "@types/prismjs": "^1.26.6",
     "autoprefixer": "^10.5.0",
     "eslint": "^10.2.1",
-    "postcss": "^8.5.10",
+    "postcss": "^8.5.12",
     "tailwindcss": "^4.2.4",
     "typescript": "^6.0.3"
   }
