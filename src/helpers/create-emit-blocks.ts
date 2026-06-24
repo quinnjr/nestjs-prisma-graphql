@@ -32,8 +32,7 @@ export function createEmitBlocks(data?: string[]): Record<EmittedBlockType, bool
     return allBlocks;
   }
 
-  const initialBlocks: Record<EmittedBlockType, boolean> = {} as Record<EmittedBlockType, boolean>;
-  let currentBlocks = initialBlocks;
+  let currentBlocks: Partial<Record<EmittedBlockType, boolean>> = {};
 
   for (const block of data) {
     if (!Object.keys(blocksDependencyMap).includes(block)) {
@@ -43,9 +42,8 @@ export function createEmitBlocks(data?: string[]): Record<EmittedBlockType, bool
     const blockEntries = blocksDependencyMap[block as EmitBlocksOption].map(
       emittedBlock => [emittedBlock, true] as const,
     );
-    const newBlocks = Object.fromEntries(blockEntries) as Record<
-      EmittedBlockType,
-      boolean
+    const newBlocks = Object.fromEntries(blockEntries) as Partial<
+      Record<EmittedBlockType, boolean>
     >;
     currentBlocks = {
       ...currentBlocks,
@@ -53,5 +51,5 @@ export function createEmitBlocks(data?: string[]): Record<EmittedBlockType, bool
     };
   }
 
-  return currentBlocks;
+  return currentBlocks as Record<EmittedBlockType, boolean>;
 }

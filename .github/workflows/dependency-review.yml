@@ -16,8 +16,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      # NOTE: actions/dependency-review-action requires the repository's
+      # Dependency Graph feature to be enabled (Settings -> Code security ->
+      # Dependency graph). That setting cannot be toggled via the API/CLI; it
+      # must be enabled by a repo admin in the web UI. Until it is enabled the
+      # action errors with "Dependency review is not supported on this
+      # repository", which would otherwise hard-fail every PR (including all
+      # Dependabot PRs). continue-on-error keeps the check non-blocking; once
+      # the Dependency Graph is enabled it can be removed to make this a gate.
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
+        continue-on-error: true
         with:
           fail-on-severity: high
           deny-licenses: GPL-3.0, AGPL-3.0

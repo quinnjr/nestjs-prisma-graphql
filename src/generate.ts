@@ -12,8 +12,7 @@ type RequireFunction = (id: string) => unknown;
 const createRequireTyped: (filename: string) => RequireFunction = createRequire as (
   filename: string,
 ) => RequireFunction;
-// ESLint doesn't understand import.meta.url type - cast to string explicitly
-const requireCjs: RequireFunction = createRequireTyped(String(import.meta.url));
+const requireCjs: RequireFunction = createRequireTyped(import.meta.url);
 
 // Type for await-event-emitter's default export
 type AwaitEventEmitterConstructor = new () => EventEmitter;

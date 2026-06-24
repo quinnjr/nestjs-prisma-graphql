@@ -156,15 +156,9 @@ export function inputType(
 
     if (propertySettings) {
       importDeclarations.create({ ...propertySettings });
-    } else if (
-      propertyType.some(
-        p => p.includes('Prisma.Decimal'),
-      )
-    ) {
+    } else if (propertyType.some(p => p.includes('Prisma.Decimal'))) {
       importDeclarations.add('Prisma', config.prismaClientImport);
-    } else if (
-      propertyType.some(p => p.startsWith('Prisma.'))
-    ) {
+    } else if (propertyType.some(p => p.startsWith('Prisma.'))) {
       importDeclarations.add('Prisma', config.prismaClientImport);
     }
 
@@ -205,7 +199,7 @@ export function inputType(
       graphqlType = graphqlImport.name;
       // Extract the actual type name from complex property types like "typeof X | Y"
       if (location === 'enumTypes') {
-        const parts = String(propertyType[0]).split(' ');
+        const parts = propertyType[0].split(' ');
         const lastPart = parts.at(-1);
         if (lastPart !== undefined) {
           // Use lastPart for enum type resolution

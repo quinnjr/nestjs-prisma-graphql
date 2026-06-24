@@ -1,4 +1,4 @@
-/* eslint-disable no-console, @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
+/* eslint-disable no-console, @typescript-eslint/restrict-template-expressions */
 import type { EventArguments } from '../types.js';
 
 /**
@@ -28,7 +28,7 @@ export function postProcessImports(args: EventArguments): void {
 
     // Add .js to relative imports (both regular and type imports)
     const withExtensions = content.replace(
-      /from ['"](\.\.[/.][\w\-/]*(?:\/[\w\-]+)?)['"]/g,
+      /from ['"](\.\.[/.][\w/-]*(?:\/[\w-]+)?)['"]/g,
       (match: string, importPath: string) => {
         if (importPath && typeof importPath === 'string' && !importPath.endsWith('.js')) {
           modified = true;
