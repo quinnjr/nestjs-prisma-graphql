@@ -8,8 +8,7 @@ import { arch, platform } from 'node:os';
 type RequireFunction = (id: string) => unknown;
 type CreateRequireFunction = (filename: string) => RequireFunction;
 const createRequireTyped: CreateRequireFunction = createRequire as CreateRequireFunction;
-// ESLint doesn't understand import.meta.url type - cast to string explicitly
-const requireCjs: RequireFunction = createRequireTyped(String(import.meta.url));
+const requireCjs: RequireFunction = createRequireTyped(import.meta.url);
 
 // Patch fs with graceful-fs to handle EMFILE errors during mass file generation.
 // This generator can produce 17k+ files; without this patch, constrained environments

@@ -16,6 +16,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      # Requires the repository's Dependency Graph feature, which is enabled
+      # for this repo. This step gates PRs on high-severity advisories and
+      # denied licenses.
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
         with:
