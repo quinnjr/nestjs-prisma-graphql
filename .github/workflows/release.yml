@@ -78,7 +78,7 @@ jobs:
 
       - name: Update version in package.json
         run: |
-          npm version ${{ needs.validate.outputs.version }} --no-git-tag-version
+          npm version ${{ needs.validate.outputs.version }} --no-git-tag-version --allow-same-version
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
