@@ -113,8 +113,22 @@ jobs:
         with:
           name: release-dist
 
+      - name: Scope package for GitHub Packages
+        run: |
+          # GitHub Packages publishes into the repo owner's namespace (quinnjr),
+          # so rewrite the canonical @pegasusheavy npm name to @quinnjr here only.
+          # Also override publishConfig.registry (npmjs.org) so this job targets
+          # GitHub Packages and not npm.
+          jq '.name = "@quinnjr/nestjs-prisma-graphql"
+            | .publishConfig.registry = "https://npm.pkg.github.com"
+            | .repository.url = "git+https://github.com/quinnjr/nestjs-prisma-graphql.git"' \
+            package.json > package.json.tmp && mv package.json.tmp package.json
+          echo "Publishing $(jq -r '.name + "@" + .version' package.json) to GitHub Packages"
+
       - name: Publish to GitHub Packages
-        run: pnpm publish --access public --no-git-checks
+        # --ignore-scripts skips prepublishOnly (clean + tsc build); dist/ is
+        # already provided by the build artifact and deps are not installed here.
+        run: pnpm publish --access public --no-git-checks --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
