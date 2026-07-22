@@ -197,15 +197,6 @@ export function inputType(
       });
 
       graphqlType = graphqlImport.name;
-      // Extract the actual type name from complex property types like "typeof X | Y"
-      if (location === 'enumTypes') {
-        const parts = propertyType[0].split(' ');
-        const lastPart = parts.at(-1);
-        if (lastPart !== undefined) {
-          // Use lastPart for enum type resolution
-          void lastPart;
-        }
-      }
 
       // In ESM mode, always use getType() for input object types
       const shouldUseLazyType = config.esmCompatible && location === 'inputObjectTypes';
