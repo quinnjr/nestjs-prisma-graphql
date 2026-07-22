@@ -1,8 +1,11 @@
-# @pegasus-heavy/nestjs-prisma-graphql
+# @quinnjr/nestjs-prisma-graphql
 
-[![npm version](https://img.shields.io/npm/v/@pegasus-heavy/nestjs-prisma-graphql.svg)](https://www.npmjs.com/package/@pegasus-heavy/nestjs-prisma-graphql)
+> [!IMPORTANT]
+> **This package has moved.** The repository now lives at [quinnjr/nestjs-prisma-graphql](https://github.com/quinnjr/nestjs-prisma-graphql) and new versions are published to npm as [`@quinnjr/nestjs-prisma-graphql`](https://www.npmjs.com/package/@quinnjr/nestjs-prisma-graphql). The old `@pegasusheavy` scope no longer receives releases — point new installs and existing dependents at `@quinnjr/nestjs-prisma-graphql`.
+
+[![npm version](https://img.shields.io/npm/v/@quinnjr/nestjs-prisma-graphql.svg)](https://www.npmjs.com/package/@quinnjr/nestjs-prisma-graphql)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Node.js Version](https://img.shields.io/node/v/@pegasus-heavy/nestjs-prisma-graphql.svg)](https://nodejs.org)
+[![Node.js Version](https://img.shields.io/node/v/@quinnjr/nestjs-prisma-graphql.svg)](https://nodejs.org)
 [![Prisma](https://img.shields.io/badge/Prisma-7.x-2D3748?logo=prisma)](https://www.prisma.io)
 [![NestJS](https://img.shields.io/badge/NestJS-11.x-E0234E?logo=nestjs)](https://nestjs.com)
 
@@ -79,13 +82,13 @@ Generate object types, inputs, args, enums, and more from your Prisma schema for
 
 ```bash
 # Using pnpm (recommended)
-pnpm add -D @pegasus-heavy/nestjs-prisma-graphql
+pnpm add -D @quinnjr/nestjs-prisma-graphql
 
 # Using npm
-npm install -D @pegasus-heavy/nestjs-prisma-graphql
+npm install -D @quinnjr/nestjs-prisma-graphql
 
 # Using yarn
-yarn add -D @pegasus-heavy/nestjs-prisma-graphql
+yarn add -D @quinnjr/nestjs-prisma-graphql
 ```
 
 ### Peer Dependencies
@@ -1133,7 +1136,7 @@ DEBUG=prisma:generator npx prisma generate
 
 ```bash
 # Clone the repository
-git clone https://github.com/pegasusheavy/nestjs-prisma-graphql.git
+git clone https://github.com/quinnjr/nestjs-prisma-graphql.git
 cd nestjs-prisma-graphql
 
 # Install dependencies
@@ -1240,7 +1243,7 @@ This project is a fork of [prisma-nestjs-graphql](https://github.com/unlight/pri
 
 ## Support
 
-- 📖 [Documentation](https://github.com/pegasusheavy/nestjs-prisma-graphql#readme)
-- 🐛 [Issue Tracker](https://github.com/pegasusheavy/nestjs-prisma-graphql/issues)
-- 💬 [Discussions](https://github.com/pegasusheavy/nestjs-prisma-graphql/discussions)
-- ❤️ [Sponsor](https://github.com/sponsors/pegasusheavy)
+- 📖 [Documentation](https://github.com/quinnjr/nestjs-prisma-graphql#readme)
+- 🐛 [Issue Tracker](https://github.com/quinnjr/nestjs-prisma-graphql/issues)
+- 💬 [Discussions](https://github.com/quinnjr/nestjs-prisma-graphql/discussions)
+- ❤️ [Sponsor](https://github.com/sponsors/quinnjr)
