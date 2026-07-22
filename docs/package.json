@@ -1,5 +1,5 @@
 {
-  "name": "@pegasus-heavy/nestjs-prisma-graphql-docs",
+  "name": "@quinnjr/nestjs-prisma-graphql-docs",
   "version": "1.0.0",
   "private": true,
   "license": "Apache-2.0",

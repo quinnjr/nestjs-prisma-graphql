@@ -1,16 +1,16 @@
 {
-  "name": "@pegasusheavy/nestjs-prisma-graphql",
+  "name": "@quinnjr/nestjs-prisma-graphql",
   "version": "1.6.5",
   "type": "module",
   "license": "Apache-2.0",
   "description": "Generate NestJS GraphQL types from Prisma schema - ESM-first for Prisma 7+",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pegasusheavy/nestjs-prisma-graphql.git"
+    "url": "https://github.com/quinnjr/nestjs-prisma-graphql.git"
   },
-  "homepage": "https://pegasusheavy.github.io/nestjs-prisma-graphql",
+  "homepage": "https://github.com/quinnjr/nestjs-prisma-graphql#readme",
   "bugs": {
-    "url": "https://github.com/pegasusheavy/nestjs-prisma-graphql/issues"
+    "url": "https://github.com/quinnjr/nestjs-prisma-graphql/issues"
   },
   "keywords": [
     "nestjs",
