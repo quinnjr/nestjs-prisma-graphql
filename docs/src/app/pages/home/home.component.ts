@@ -40,7 +40,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
                 Get Started
               </a>
               <a
-                href="https://github.com/pegasusheavy/nestjs-prisma-graphql"
+                href="https://github.com/quinnjr/nestjs-prisma-graphql"
                 target="_blank"
                 rel="noopener"
                 class="px-8 py-4 rounded-xl glass text-white font-semibold hover:bg-white/10 transition-all flex items-center gap-2"
@@ -104,14 +104,14 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
 
           <div class="space-y-4">
             <app-code-block
-              [code]="'pnpm add -D @pegasus-heavy/nestjs-prisma-graphql'"
+              [code]="'pnpm add -D @quinnjr/nestjs-prisma-graphql'"
               language="bash"
             />
 
             <div class="text-center text-steel-500">or</div>
 
             <app-code-block
-              [code]="'npm install -D @pegasus-heavy/nestjs-prisma-graphql'"
+              [code]="'npm install -D @quinnjr/nestjs-prisma-graphql'"
               language="bash"
             />
           </div>

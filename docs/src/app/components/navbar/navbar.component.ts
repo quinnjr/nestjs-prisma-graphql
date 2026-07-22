@@ -40,7 +40,7 @@ import { NgClass } from '@angular/common';
           <!-- GitHub & Mobile Toggle -->
           <div class="flex items-center gap-3">
             <a
-              href="https://github.com/pegasusheavy/nestjs-prisma-graphql"
+              href="https://github.com/quinnjr/nestjs-prisma-graphql"
               target="_blank"
               rel="noopener noreferrer"
               class="p-2 rounded-lg text-steel-400 hover:text-white hover:bg-white/5 transition-all"

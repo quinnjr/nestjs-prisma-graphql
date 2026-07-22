@@ -18,6 +18,7 @@ export default tseslint.config(
       '*.config.ts',
       'prisma/client/**',
       'src/benchmark/**',
+      'docs/',
     ],
   },
   {

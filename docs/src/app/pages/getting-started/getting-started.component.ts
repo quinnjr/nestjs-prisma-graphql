@@ -190,13 +190,13 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
 })
 export class GettingStartedComponent {
   installCode = `# Using pnpm (recommended)
-pnpm add -D @pegasus-heavy/nestjs-prisma-graphql
+pnpm add -D @quinnjr/nestjs-prisma-graphql
 
 # Using npm
-npm install -D @pegasus-heavy/nestjs-prisma-graphql
+npm install -D @quinnjr/nestjs-prisma-graphql
 
 # Using yarn
-yarn add -D @pegasus-heavy/nestjs-prisma-graphql`;
+yarn add -D @quinnjr/nestjs-prisma-graphql`;
 
   schemaConfig = `generator client {
   provider = "prisma-client-js"
