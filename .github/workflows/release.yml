@@ -115,12 +115,11 @@ jobs:
 
       - name: Scope package for GitHub Packages
         run: |
-          # GitHub Packages publishes into the repo owner's namespace (quinnjr),
-          # so rewrite the canonical @pegasusheavy npm name to @quinnjr here only.
-          # Also override publishConfig.registry (npmjs.org) so this job targets
-          # GitHub Packages and not npm.
-          jq '.name = "@quinnjr/nestjs-prisma-graphql"
-            | .publishConfig.registry = "https://npm.pkg.github.com"
+          # The canonical npm name is already @quinnjr/nestjs-prisma-graphql.
+          # Only override publishConfig.registry (npmjs.org) so this job targets
+          # GitHub Packages and not npm, and point repository.url at this repo
+          # so the package links back here.
+          jq '.publishConfig.registry = "https://npm.pkg.github.com"
             | .repository.url = "git+https://github.com/quinnjr/nestjs-prisma-graphql.git"' \
             package.json > package.json.tmp && mv package.json.tmp package.json
           echo "Publishing $(jq -r '.name + "@" + .version' package.json) to GitHub Packages"
@@ -179,12 +178,12 @@ jobs:
             ## Installation
 
             ```bash
-            pnpm add -D @pegasus-heavy/nestjs-prisma-graphql@${{ needs.validate.outputs.version }}
+            pnpm add -D @quinnjr/nestjs-prisma-graphql@${{ needs.validate.outputs.version }}
             ```
 
             ## Documentation
 
-            See the [documentation](https://pegasusheavyindustries.github.io/nestjs-prisma-graphql/) for usage instructions.
+            See the [documentation](https://github.com/quinnjr/nestjs-prisma-graphql#readme) for usage instructions.
           draft: false
           prerelease: ${{ contains(needs.validate.outputs.version, '-') }}
           generate_release_notes: true

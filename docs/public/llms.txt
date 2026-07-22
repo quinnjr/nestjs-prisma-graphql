@@ -1,4 +1,4 @@
-# @pegasus-heavy/nestjs-prisma-graphql
+# @quinnjr/nestjs-prisma-graphql
 
 > Generate NestJS GraphQL types from your Prisma schema with ESM-first support.
 
@@ -7,8 +7,8 @@ An ESM-native Prisma generator that produces object types, inputs, args, enums, 
 ## Links
 
 - [Documentation](https://pegasusheavy.github.io/nestjs-prisma-graphql/)
-- [GitHub Repository](https://github.com/pegasusheavy/nestjs-prisma-graphql)
-- [npm Package](https://www.npmjs.com/package/@pegasus-heavy/nestjs-prisma-graphql)
+- [GitHub Repository](https://github.com/quinnjr/nestjs-prisma-graphql)
+- [npm Package](https://www.npmjs.com/package/@quinnjr/nestjs-prisma-graphql)
 
 ## Key Features
 
@@ -26,10 +26,10 @@ An ESM-native Prisma generator that produces object types, inputs, args, enums, 
 
 ```bash
 # Using pnpm (recommended)
-pnpm add -D @pegasus-heavy/nestjs-prisma-graphql
+pnpm add -D @quinnjr/nestjs-prisma-graphql
 
 # Using npm
-npm install -D @pegasus-heavy/nestjs-prisma-graphql
+npm install -D @quinnjr/nestjs-prisma-graphql
 ```
 
 ## Quick Start

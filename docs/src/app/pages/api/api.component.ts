@@ -176,7 +176,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
   `,
 })
 export class ApiComponent {
-  generateApi = `import { generate } from '@pegasus-heavy/nestjs-prisma-graphql/generate';
+  generateApi = `import { generate } from '@quinnjr/nestjs-prisma-graphql/generate';
 import type { GeneratorOptions } from '@prisma/generator-helper';
 
 // Called by Prisma during \`prisma generate\`
@@ -203,7 +203,7 @@ export async function generate(
     { name: 'Warning', description: 'Non-fatal warning occurred' },
   ];
 
-  eventExample = `import { generate } from '@pegasus-heavy/nestjs-prisma-graphql/generate';
+  eventExample = `import { generate } from '@quinnjr/nestjs-prisma-graphql/generate';
 
 await generate({
   ...options,
