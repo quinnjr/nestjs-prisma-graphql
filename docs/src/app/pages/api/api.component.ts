@@ -26,11 +26,10 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <section class="mb-12">
           <h2 class="text-2xl font-bold text-white mb-6">generate()</h2>
           <p class="text-steel-300 mb-4">
-            The main generator function. Called by Prisma during
-            <code>prisma generate</code>.
+            The main generator function. Called by Prisma during <code>prisma generate</code>.
           </p>
           <app-code-block [code]="generateApi" language="typescript" />
-
+          
           <h3 class="text-lg font-semibold text-white mt-6 mb-3">Parameters</h3>
           <div class="overflow-x-auto">
             <table class="w-full text-left">
@@ -45,27 +44,17 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
                 <tr class="hover:bg-white/[0.02]">
                   <td class="py-3 px-4"><code class="text-pegasus-400">args</code></td>
                   <td class="py-3 px-4 text-steel-400">GeneratorOptions</td>
-                  <td class="py-3 px-4 text-steel-300">
-                    Prisma generator options from DMMF
-                  </td>
+                  <td class="py-3 px-4 text-steel-300">Prisma generator options from DMMF</td>
                 </tr>
                 <tr class="hover:bg-white/[0.02]">
-                  <td class="py-3 px-4">
-                    <code class="text-pegasus-400">skipAddOutputSourceFiles</code>
-                  </td>
+                  <td class="py-3 px-4"><code class="text-pegasus-400">skipAddOutputSourceFiles</code></td>
                   <td class="py-3 px-4 text-steel-400">boolean</td>
-                  <td class="py-3 px-4 text-steel-300">
-                    Skip adding source files to project (testing)
-                  </td>
+                  <td class="py-3 px-4 text-steel-300">Skip adding source files to project (testing)</td>
                 </tr>
                 <tr class="hover:bg-white/[0.02]">
-                  <td class="py-3 px-4">
-                    <code class="text-pegasus-400">connectCallback</code>
-                  </td>
+                  <td class="py-3 px-4"><code class="text-pegasus-400">connectCallback</code></td>
                   <td class="py-3 px-4 text-steel-400">Function</td>
-                  <td class="py-3 px-4 text-steel-300">
-                    Hook to connect to generator events
-                  </td>
+                  <td class="py-3 px-4 text-steel-300">Hook to connect to generator events</td>
                 </tr>
               </tbody>
             </table>
@@ -76,8 +65,8 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <section class="mb-12">
           <h2 class="text-2xl font-bold text-white mb-6">Event System</h2>
           <p class="text-steel-300 mb-4">
-            The generator uses an event-based architecture. You can hook into various
-            stages of generation using the <code>connectCallback</code> parameter.
+            The generator uses an event-based architecture. You can hook into various stages 
+            of generation using the <code>connectCallback</code> parameter.
           </p>
 
           <h3 class="text-lg font-semibold text-white mb-3">Available Events</h3>
@@ -92,9 +81,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               <tbody class="divide-y divide-white/5">
                 @for (event of events; track event.name) {
                   <tr class="hover:bg-white/[0.02]">
-                    <td class="py-3 px-4">
-                      <code class="text-pegasus-400">{{ event.name }}</code>
-                    </td>
+                    <td class="py-3 px-4"><code class="text-pegasus-400">{{ event.name }}</code></td>
                     <td class="py-3 px-4 text-steel-300">{{ event.description }}</td>
                   </tr>
                 }
@@ -102,9 +89,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
             </table>
           </div>
 
-          <h3 class="text-lg font-semibold text-white mt-6 mb-3">
-            Example: Custom Event Handler
-          </h3>
+          <h3 class="text-lg font-semibold text-white mt-6 mb-3">Example: Custom Event Handler</h3>
           <app-code-block [code]="eventExample" language="typescript" />
         </section>
 
@@ -144,13 +129,11 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- Utility Functions -->
         <section class="mb-12">
           <h2 class="text-2xl font-bold text-white mb-6">Utility Functions</h2>
-
+          
           <div class="space-y-6">
             <div class="p-5 rounded-xl glass">
               <h3 class="font-semibold text-white mb-2">
-                <code class="text-pegasus-400"
-                  >createGetModelName(modelNames: string[])</code
-                >
+                <code class="text-pegasus-400">createGetModelName(modelNames: string[])</code>
               </h3>
               <p class="text-steel-400 text-sm mb-3">
                 Creates a function that extracts model names from Prisma type names.
@@ -162,7 +145,9 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               <h3 class="font-semibold text-white mb-2">
                 <code class="text-pegasus-400">pascalCase(value: string)</code>
               </h3>
-              <p class="text-steel-400 text-sm mb-3">Converts strings to PascalCase.</p>
+              <p class="text-steel-400 text-sm mb-3">
+                Converts strings to PascalCase.
+              </p>
               <app-code-block [code]="pascalCaseExample" language="typescript" />
             </div>
 
@@ -243,31 +228,11 @@ await generate({
 });`;
 
   typeCategories = [
-    {
-      name: 'model',
-      description: 'Main model class with ObjectType decorator',
-      example: 'User, Post',
-    },
-    {
-      name: 'input',
-      description: 'Input types for mutations',
-      example: 'UserCreateInput, PostUpdateInput',
-    },
-    {
-      name: 'args',
-      description: 'Arguments for queries/mutations',
-      example: 'FindManyUserArgs',
-    },
-    {
-      name: 'output',
-      description: 'Output types for aggregations',
-      example: 'AggregateUser, UserCountOutput',
-    },
-    {
-      name: 'enum',
-      description: 'Prisma enums as GraphQL enums',
-      example: 'Role, Status',
-    },
+    { name: 'model', description: 'Main model class with ObjectType decorator', example: 'User, Post' },
+    { name: 'input', description: 'Input types for mutations', example: 'UserCreateInput, PostUpdateInput' },
+    { name: 'args', description: 'Arguments for queries/mutations', example: 'FindManyUserArgs' },
+    { name: 'output', description: 'Output types for aggregations', example: 'AggregateUser, UserCountOutput' },
+    { name: 'enum', description: 'Prisma enums as GraphQL enums', example: 'Role, Status' },
   ];
 
   configTypes = `interface GeneratorConfiguration {

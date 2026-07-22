@@ -1,0 +1,5 @@
+# The Angular docs app is not part of the repo formatting pipeline
+# (`pnpm format` only covers src). Ignore it here so lint-staged does not
+# reformat the whole app on every docs commit. Matches the `docs/` entry
+# in eslint.config.js ignores.
+docs/
