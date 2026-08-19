@@ -2,17 +2,17 @@
 
 @theme {
   /* Custom color palette - Cyberpunk/Industrial theme */
-  --color-pegasus-50: #f0fdf9;
-  --color-pegasus-100: #ccfbef;
-  --color-pegasus-200: #99f6df;
-  --color-pegasus-300: #5eeac8;
-  --color-pegasus-400: #2dd4ac;
-  --color-pegasus-500: #14b893;
-  --color-pegasus-600: #0d9477;
-  --color-pegasus-700: #0f7661;
-  --color-pegasus-800: #115e4f;
-  --color-pegasus-900: #134e42;
-  --color-pegasus-950: #042f27;
+  --color-brand-50: #f0fdf9;
+  --color-brand-100: #ccfbef;
+  --color-brand-200: #99f6df;
+  --color-brand-300: #5eeac8;
+  --color-brand-400: #2dd4ac;
+  --color-brand-500: #14b893;
+  --color-brand-600: #0d9477;
+  --color-brand-700: #0f7661;
+  --color-brand-800: #115e4f;
+  --color-brand-900: #134e42;
+  --color-brand-950: #042f27;
 
   --color-forge-50: #fef7ee;
   --color-forge-100: #fdedd6;

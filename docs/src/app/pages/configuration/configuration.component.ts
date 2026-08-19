@@ -12,7 +12,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- Header -->
         <div class="mb-12">
           <nav class="flex items-center gap-2 text-sm text-steel-400 mb-4">
-            <a routerLink="/" class="hover:text-pegasus-400 transition-colors">Home</a>
+            <a routerLink="/" class="hover:text-brand-400 transition-colors">Home</a>
             <span>/</span>
             <span class="text-white">Configuration</span>
           </nav>
@@ -38,7 +38,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               <tbody class="divide-y divide-white/5">
                 @for (opt of coreOptions; track opt.name) {
                   <tr class="hover:bg-white/[0.02]">
-                    <td class="py-3 px-4"><code class="text-pegasus-400">{{ opt.name }}</code></td>
+                    <td class="py-3 px-4"><code class="text-brand-400">{{ opt.name }}</code></td>
                     <td class="py-3 px-4 text-steel-400">{{ opt.type }}</td>
                     <td class="py-3 px-4"><code class="text-forge-400">{{ opt.default }}</code></td>
                     <td class="py-3 px-4 text-steel-300">{{ opt.description }}</td>
@@ -73,7 +73,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               <tbody class="divide-y divide-white/5">
                 @for (p of placeholders; track p.name) {
                   <tr class="hover:bg-white/[0.02]">
-                    <td class="py-3 px-4"><code class="text-pegasus-400">{{ p.name }}</code></td>
+                    <td class="py-3 px-4"><code class="text-brand-400">{{ p.name }}</code></td>
                     <td class="py-3 px-4 text-steel-300">{{ p.description }}</td>
                     <td class="py-3 px-4"><code class="text-forge-400">{{ p.example }}</code></td>
                   </tr>
@@ -98,7 +98,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
             @for (opt of reExportOptions; track opt.value) {
               <div class="p-4 rounded-xl glass">
                 <div class="flex items-center gap-3 mb-2">
-                  <code class="text-pegasus-400 font-medium">{{ opt.value }}</code>
+                  <code class="text-brand-400 font-medium">{{ opt.value }}</code>
                 </div>
                 <p class="text-steel-400 text-sm">{{ opt.description }}</p>
               </div>
@@ -122,7 +122,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               <tbody class="divide-y divide-white/5">
                 @for (opt of codeGenOptions; track opt.name) {
                   <tr class="hover:bg-white/[0.02]">
-                    <td class="py-3 px-4"><code class="text-pegasus-400">{{ opt.name }}</code></td>
+                    <td class="py-3 px-4"><code class="text-brand-400">{{ opt.name }}</code></td>
                     <td class="py-3 px-4 text-steel-400">{{ opt.type }}</td>
                     <td class="py-3 px-4"><code class="text-forge-400">{{ opt.default }}</code></td>
                     <td class="py-3 px-4 text-steel-300">{{ opt.description }}</td>
@@ -141,8 +141,8 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           </p>
           <app-code-block [code]="decorateExample" language="graphql" filename="schema.prisma" />
 
-          <div class="mt-6 p-4 rounded-lg bg-pegasus-500/10 border border-pegasus-500/20">
-            <p class="text-sm text-pegasus-300">
+          <div class="mt-6 p-4 rounded-lg bg-brand-500/10 border border-brand-500/20">
+            <p class="text-sm text-brand-300">
               <strong>Pattern:</strong> <code>decorate_N_property</code> where N is a number (1, 2, 3...)
               and property is one of: <code>type</code>, <code>field</code>, <code>name</code>, <code>from</code>, <code>arguments</code>
             </p>

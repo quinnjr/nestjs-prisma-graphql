@@ -12,7 +12,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- Header -->
         <div class="mb-12">
           <nav class="flex items-center gap-2 text-sm text-steel-400 mb-4">
-            <a routerLink="/" class="hover:text-pegasus-400 transition-colors">Home</a>
+            <a routerLink="/" class="hover:text-brand-400 transition-colors">Home</a>
             <span>/</span>
             <span class="text-white">API Reference</span>
           </nav>
@@ -42,17 +42,17 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               </thead>
               <tbody class="divide-y divide-white/5">
                 <tr class="hover:bg-white/[0.02]">
-                  <td class="py-3 px-4"><code class="text-pegasus-400">args</code></td>
+                  <td class="py-3 px-4"><code class="text-brand-400">args</code></td>
                   <td class="py-3 px-4 text-steel-400">GeneratorOptions</td>
                   <td class="py-3 px-4 text-steel-300">Prisma generator options from DMMF</td>
                 </tr>
                 <tr class="hover:bg-white/[0.02]">
-                  <td class="py-3 px-4"><code class="text-pegasus-400">skipAddOutputSourceFiles</code></td>
+                  <td class="py-3 px-4"><code class="text-brand-400">skipAddOutputSourceFiles</code></td>
                   <td class="py-3 px-4 text-steel-400">boolean</td>
                   <td class="py-3 px-4 text-steel-300">Skip adding source files to project (testing)</td>
                 </tr>
                 <tr class="hover:bg-white/[0.02]">
-                  <td class="py-3 px-4"><code class="text-pegasus-400">connectCallback</code></td>
+                  <td class="py-3 px-4"><code class="text-brand-400">connectCallback</code></td>
                   <td class="py-3 px-4 text-steel-400">Function</td>
                   <td class="py-3 px-4 text-steel-300">Hook to connect to generator events</td>
                 </tr>
@@ -81,7 +81,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               <tbody class="divide-y divide-white/5">
                 @for (event of events; track event.name) {
                   <tr class="hover:bg-white/[0.02]">
-                    <td class="py-3 px-4"><code class="text-pegasus-400">{{ event.name }}</code></td>
+                    <td class="py-3 px-4"><code class="text-brand-400">{{ event.name }}</code></td>
                     <td class="py-3 px-4 text-steel-300">{{ event.description }}</td>
                   </tr>
                 }
@@ -103,7 +103,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           <div class="grid sm:grid-cols-2 gap-4">
             @for (type of typeCategories; track type.name) {
               <div class="p-5 rounded-xl glass">
-                <code class="text-pegasus-400 font-medium">{{ type.name }}</code>
+                <code class="text-brand-400 font-medium">{{ type.name }}</code>
                 <p class="text-sm text-steel-400 mt-2">{{ type.description }}</p>
                 <p class="text-xs text-steel-500 mt-2">Example: {{ type.example }}</p>
               </div>
@@ -133,7 +133,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           <div class="space-y-6">
             <div class="p-5 rounded-xl glass">
               <h3 class="font-semibold text-white mb-2">
-                <code class="text-pegasus-400">createGetModelName(modelNames: string[])</code>
+                <code class="text-brand-400">createGetModelName(modelNames: string[])</code>
               </h3>
               <p class="text-steel-400 text-sm mb-3">
                 Creates a function that extracts model names from Prisma type names.
@@ -143,7 +143,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
 
             <div class="p-5 rounded-xl glass">
               <h3 class="font-semibold text-white mb-2">
-                <code class="text-pegasus-400">pascalCase(value: string)</code>
+                <code class="text-brand-400">pascalCase(value: string)</code>
               </h3>
               <p class="text-steel-400 text-sm mb-3">
                 Converts strings to PascalCase.
@@ -153,7 +153,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
 
             <div class="p-5 rounded-xl glass">
               <h3 class="font-semibold text-white mb-2">
-                <code class="text-pegasus-400">getPropertyType(field: Field)</code>
+                <code class="text-brand-400">getPropertyType(field: Field)</code>
               </h3>
               <p class="text-steel-400 text-sm mb-3">
                 Gets the TypeScript property type for a Prisma field.
@@ -176,7 +176,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
   `,
 })
 export class ApiComponent {
-  generateApi = `import { generate } from '@quinnjr/nestjs-prisma-graphql/generate';
+  generateApi = `import { generate } from 'nestjs-prisma-graphql/generate';
 import type { GeneratorOptions } from '@prisma/generator-helper';
 
 // Called by Prisma during \`prisma generate\`
@@ -203,7 +203,7 @@ export async function generate(
     { name: 'Warning', description: 'Non-fatal warning occurred' },
   ];
 
-  eventExample = `import { generate } from '@quinnjr/nestjs-prisma-graphql/generate';
+  eventExample = `import { generate } from 'nestjs-prisma-graphql/generate';
 
 await generate({
   ...options,

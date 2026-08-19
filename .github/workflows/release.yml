@@ -115,7 +115,7 @@ jobs:
 
       - name: Scope package for GitHub Packages
         run: |
-          # The canonical npm name is already @quinnjr/nestjs-prisma-graphql.
+          # The canonical npm name is the unscoped nestjs-prisma-graphql.
           # Only override publishConfig.registry (npmjs.org) so this job targets
           # GitHub Packages and not npm, and point repository.url at this repo
           # so the package links back here.
@@ -178,7 +178,7 @@ jobs:
             ## Installation
 
             ```bash
-            pnpm add -D @quinnjr/nestjs-prisma-graphql@${{ needs.validate.outputs.version }}
+            pnpm add -D nestjs-prisma-graphql@${{ needs.validate.outputs.version }}
             ```
 
             ## Documentation

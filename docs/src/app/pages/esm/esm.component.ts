@@ -12,7 +12,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- Header -->
         <div class="mb-12">
           <nav class="flex items-center gap-2 text-sm text-steel-400 mb-4">
-            <a routerLink="/" class="hover:text-pegasus-400 transition-colors">Home</a>
+            <a routerLink="/" class="hover:text-brand-400 transition-colors">Home</a>
             <span>/</span>
             <span class="text-white">ESM Guide</span>
           </nav>
@@ -66,14 +66,14 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           <h3 class="text-lg font-semibold text-white mt-6 mb-3">What Gets Generated</h3>
           <div class="space-y-4">
             <div class="p-4 rounded-lg glass">
-              <code class="text-pegasus-400">type-registry.ts</code>
+              <code class="text-brand-400">type-registry.ts</code>
               <p class="text-sm text-steel-400 mt-1">
                 Central registry for lazy type resolution. Types are registered at module load time
                 and resolved at runtime.
               </p>
             </div>
             <div class="p-4 rounded-lg glass">
-              <code class="text-pegasus-400">register-all-types.ts</code>
+              <code class="text-brand-400">register-all-types.ts</code>
               <p class="text-sm text-steel-400 mt-1">
                 Import this early in your application to ensure all types are registered before use.
               </p>
@@ -101,8 +101,8 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           </p>
           <app-code-block [code]="mainSetup" language="typescript" filename="main.ts" />
 
-          <div class="mt-4 p-4 rounded-lg bg-pegasus-500/10 border border-pegasus-500/20">
-            <p class="text-sm text-pegasus-300">
+          <div class="mt-4 p-4 rounded-lg bg-brand-500/10 border border-brand-500/20">
+            <p class="text-sm text-brand-300">
               <strong>Important:</strong> The <code>register-all-types</code> import must come
               before any code that uses the generated types.
             </p>

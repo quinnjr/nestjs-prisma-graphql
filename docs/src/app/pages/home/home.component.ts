@@ -11,13 +11,13 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
       <!-- Hero Section -->
       <section class="relative overflow-hidden">
         <div class="absolute inset-0 industrial-grid"></div>
-        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-pegasus-500/20 rounded-full blur-[128px] animate-pulse-slow"></div>
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-500/20 rounded-full blur-[128px] animate-pulse-slow"></div>
         <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-forge-500/20 rounded-full blur-[128px] animate-pulse-slow" style="animation-delay: 2s"></div>
 
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
           <div class="text-center">
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8 animate-fade-in-up opacity-0">
-              <span class="w-2 h-2 rounded-full bg-pegasus-400 animate-pulse"></span>
+              <span class="w-2 h-2 rounded-full bg-brand-400 animate-pulse"></span>
               <span class="text-sm text-steel-300">ESM-first • Prisma 7+ • NestJS</span>
             </div>
 
@@ -34,7 +34,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up opacity-0 stagger-3">
               <a
                 routerLink="/getting-started"
-                class="px-8 py-4 rounded-xl bg-gradient-to-r from-pegasus-700 to-pegasus-600 text-white font-bold hover:from-pegasus-600 hover:to-pegasus-500 transition-all shadow-lg shadow-pegasus-900/40 hover:shadow-xl hover:shadow-pegasus-800/50 hover:-translate-y-0.5 border border-pegasus-400/30"
+                class="px-8 py-4 rounded-xl bg-gradient-to-r from-brand-700 to-brand-600 text-white font-bold hover:from-brand-600 hover:to-brand-500 transition-all shadow-lg shadow-brand-900/40 hover:shadow-xl hover:shadow-brand-800/50 hover:-translate-y-0.5 border border-brand-400/30"
                 style="text-shadow: 0 1px 2px rgba(0,0,0,0.2);"
               >
                 Get Started
@@ -79,7 +79,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             @for (feature of features; track feature.title) {
               <div class="p-6 rounded-2xl glass hover:bg-white/[0.04] transition-all group">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pegasus-500/20 to-forge-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500/20 to-forge-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <span class="text-2xl">{{ feature.icon }}</span>
                 </div>
                 <h3 class="text-xl font-semibold text-white mb-2">{{ feature.title }}</h3>
@@ -104,14 +104,14 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
 
           <div class="space-y-4">
             <app-code-block
-              [code]="'pnpm add -D @quinnjr/nestjs-prisma-graphql'"
+              [code]="'pnpm add -D nestjs-prisma-graphql'"
               language="bash"
             />
 
             <div class="text-center text-steel-500">or</div>
 
             <app-code-block
-              [code]="'npm install -D @quinnjr/nestjs-prisma-graphql'"
+              [code]="'npm install -D nestjs-prisma-graphql'"
               language="bash"
             />
           </div>
@@ -119,7 +119,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           <div class="mt-12 text-center">
             <a
               routerLink="/getting-started"
-              class="inline-flex items-center gap-2 text-pegasus-400 hover:text-pegasus-300 font-medium transition-colors"
+              class="inline-flex items-center gap-2 text-brand-400 hover:text-brand-300 font-medium transition-colors"
             >
               View full installation guide
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,7 +156,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
             </div>
             <div>
               <h3 class="text-lg font-medium text-steel-300 mb-3 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-pegasus-400"></span>
+                <span class="w-2 h-2 rounded-full bg-brand-400"></span>
                 Output
               </h3>
               <app-code-block
@@ -181,7 +181,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
             </p>
             <a
               routerLink="/getting-started"
-              class="inline-flex px-8 py-4 rounded-xl bg-gradient-to-r from-pegasus-700 via-pegasus-600 to-forge-600 text-white font-bold hover:from-pegasus-600 hover:via-pegasus-500 hover:to-forge-500 transition-all shadow-xl shadow-pegasus-900/50 border border-white/20"
+              class="inline-flex px-8 py-4 rounded-xl bg-gradient-to-r from-brand-700 via-brand-600 to-forge-600 text-white font-bold hover:from-brand-600 hover:via-brand-500 hover:to-forge-500 transition-all shadow-xl shadow-brand-900/50 border border-white/20"
               style="text-shadow: 0 1px 2px rgba(0,0,0,0.3);"
             >
               Read the Documentation

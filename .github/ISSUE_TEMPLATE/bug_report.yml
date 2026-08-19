@@ -103,7 +103,7 @@ body:
     id: version
     attributes:
       label: Package Version
-      description: Version of @quinnjr/nestjs-prisma-graphql
+      description: Version of nestjs-prisma-graphql
       placeholder: '1.0.0'
     validations:
       required: true

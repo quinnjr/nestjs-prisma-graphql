@@ -12,7 +12,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- Header -->
         <div class="mb-12">
           <nav class="flex items-center gap-2 text-sm text-steel-400 mb-4">
-            <a routerLink="/" class="hover:text-pegasus-400 transition-colors">Home</a>
+            <a routerLink="/" class="hover:text-brand-400 transition-colors">Home</a>
             <span>/</span>
             <span class="text-white">Getting Started</span>
           </nav>
@@ -27,25 +27,25 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           <!-- Prerequisites -->
           <section class="mb-12">
             <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-              <span class="w-8 h-8 rounded-lg bg-pegasus-500/20 flex items-center justify-center text-pegasus-400 text-sm font-mono">1</span>
+              <span class="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center text-brand-400 text-sm font-mono">1</span>
               Prerequisites
             </h2>
             <div class="p-6 rounded-xl glass">
               <ul class="space-y-3 text-steel-300">
                 <li class="flex items-start gap-3">
-                  <svg class="w-5 h-5 text-pegasus-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 text-brand-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                   </svg>
                   <span><strong class="text-white">Node.js 20+</strong> - ESM support requires a modern Node.js version</span>
                 </li>
                 <li class="flex items-start gap-3">
-                  <svg class="w-5 h-5 text-pegasus-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 text-brand-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                   </svg>
                   <span><strong class="text-white">Prisma 7+</strong> - This generator is built for Prisma 7 and later</span>
                 </li>
                 <li class="flex items-start gap-3">
-                  <svg class="w-5 h-5 text-pegasus-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 text-brand-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                   </svg>
                   <span><strong class="text-white">NestJS 10+</strong> with &#64;nestjs/graphql package</span>
@@ -57,7 +57,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           <!-- Installation -->
           <section class="mb-12">
             <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-              <span class="w-8 h-8 rounded-lg bg-pegasus-500/20 flex items-center justify-center text-pegasus-400 text-sm font-mono">2</span>
+              <span class="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center text-brand-400 text-sm font-mono">2</span>
               Installation
             </h2>
             <p class="text-steel-300 mb-4">
@@ -81,7 +81,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           <!-- Configuration -->
           <section class="mb-12">
             <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-              <span class="w-8 h-8 rounded-lg bg-pegasus-500/20 flex items-center justify-center text-pegasus-400 text-sm font-mono">3</span>
+              <span class="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center text-brand-400 text-sm font-mono">3</span>
               Configure Prisma Schema
             </h2>
             <p class="text-steel-300 mb-4">
@@ -89,10 +89,10 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
             </p>
             <app-code-block [code]="schemaConfig" language="graphql" filename="schema.prisma" />
 
-            <div class="mt-6 p-4 rounded-lg bg-pegasus-500/10 border border-pegasus-500/20">
-              <p class="text-sm text-pegasus-300">
+            <div class="mt-6 p-4 rounded-lg bg-brand-500/10 border border-brand-500/20">
+              <p class="text-sm text-brand-300">
                 <strong>Tip:</strong> Enable <code>esmCompatible = true</code> for proper ESM circular import handling.
-                See the <a routerLink="/esm" class="underline hover:text-pegasus-200">ESM Guide</a> for details.
+                See the <a routerLink="/esm" class="underline hover:text-brand-200">ESM Guide</a> for details.
               </p>
             </div>
           </section>
@@ -100,7 +100,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           <!-- Generate -->
           <section class="mb-12">
             <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-              <span class="w-8 h-8 rounded-lg bg-pegasus-500/20 flex items-center justify-center text-pegasus-400 text-sm font-mono">4</span>
+              <span class="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center text-brand-400 text-sm font-mono">4</span>
               Generate Types
             </h2>
             <p class="text-steel-300 mb-4">
@@ -116,7 +116,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           <!-- Usage -->
           <section class="mb-12">
             <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-              <span class="w-8 h-8 rounded-lg bg-pegasus-500/20 flex items-center justify-center text-pegasus-400 text-sm font-mono">5</span>
+              <span class="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center text-brand-400 text-sm font-mono">5</span>
               Use in Your Resolvers
             </h2>
             <p class="text-steel-300 mb-4">
@@ -128,7 +128,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           <!-- ESM Setup -->
           <section class="mb-12">
             <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-              <span class="w-8 h-8 rounded-lg bg-pegasus-500/20 flex items-center justify-center text-pegasus-400 text-sm font-mono">6</span>
+              <span class="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center text-brand-400 text-sm font-mono">6</span>
               ESM Project Setup
             </h2>
             <p class="text-steel-300 mb-4">
@@ -148,7 +148,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               <a routerLink="/configuration" class="p-6 rounded-xl glass hover:bg-white/[0.04] transition-all group">
                 <h3 class="font-semibold text-white mb-2 flex items-center gap-2">
                   Configuration
-                  <svg class="w-4 h-4 text-steel-400 group-hover:text-pegasus-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-4 h-4 text-steel-400 group-hover:text-brand-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                   </svg>
                 </h3>
@@ -157,7 +157,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               <a routerLink="/decorators" class="p-6 rounded-xl glass hover:bg-white/[0.04] transition-all group">
                 <h3 class="font-semibold text-white mb-2 flex items-center gap-2">
                   Decorators
-                  <svg class="w-4 h-4 text-steel-400 group-hover:text-pegasus-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-4 h-4 text-steel-400 group-hover:text-brand-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                   </svg>
                 </h3>
@@ -166,7 +166,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               <a routerLink="/validators" class="p-6 rounded-xl glass hover:bg-white/[0.04] transition-all group">
                 <h3 class="font-semibold text-white mb-2 flex items-center gap-2">
                   Validators
-                  <svg class="w-4 h-4 text-steel-400 group-hover:text-pegasus-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-4 h-4 text-steel-400 group-hover:text-brand-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                   </svg>
                 </h3>
@@ -175,7 +175,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               <a routerLink="/esm" class="p-6 rounded-xl glass hover:bg-white/[0.04] transition-all group">
                 <h3 class="font-semibold text-white mb-2 flex items-center gap-2">
                   ESM Guide
-                  <svg class="w-4 h-4 text-steel-400 group-hover:text-pegasus-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-4 h-4 text-steel-400 group-hover:text-brand-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                   </svg>
                 </h3>
@@ -190,13 +190,13 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
 })
 export class GettingStartedComponent {
   installCode = `# Using pnpm (recommended)
-pnpm add -D @quinnjr/nestjs-prisma-graphql
+pnpm add -D nestjs-prisma-graphql
 
 # Using npm
-npm install -D @quinnjr/nestjs-prisma-graphql
+npm install -D nestjs-prisma-graphql
 
 # Using yarn
-yarn add -D @quinnjr/nestjs-prisma-graphql`;
+yarn add -D nestjs-prisma-graphql`;
 
   schemaConfig = `generator client {
   provider = "prisma-client-js"

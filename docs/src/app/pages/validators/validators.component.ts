@@ -12,7 +12,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- Header -->
         <div class="mb-12">
           <nav class="flex items-center gap-2 text-sm text-steel-400 mb-4">
-            <a routerLink="/" class="hover:text-pegasus-400 transition-colors">Home</a>
+            <a routerLink="/" class="hover:text-brand-400 transition-colors">Home</a>
             <span>/</span>
             <span class="text-white">Validators</span>
           </nav>
@@ -61,7 +61,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               <tbody class="divide-y divide-white/5">
                 @for (v of stringValidators; track v.name) {
                   <tr class="hover:bg-white/[0.02]">
-                    <td class="py-3 px-4"><code class="text-pegasus-400">{{ v.name }}</code></td>
+                    <td class="py-3 px-4"><code class="text-brand-400">{{ v.name }}</code></td>
                     <td class="py-3 px-4 text-steel-300">{{ v.description }}</td>
                   </tr>
                 }
@@ -81,7 +81,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               <tbody class="divide-y divide-white/5">
                 @for (v of numberValidators; track v.name) {
                   <tr class="hover:bg-white/[0.02]">
-                    <td class="py-3 px-4"><code class="text-pegasus-400">{{ v.name }}</code></td>
+                    <td class="py-3 px-4"><code class="text-brand-400">{{ v.name }}</code></td>
                     <td class="py-3 px-4 text-steel-300">{{ v.description }}</td>
                   </tr>
                 }
@@ -101,7 +101,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               <tbody class="divide-y divide-white/5">
                 @for (v of typeValidators; track v.name) {
                   <tr class="hover:bg-white/[0.02]">
-                    <td class="py-3 px-4"><code class="text-pegasus-400">{{ v.name }}</code></td>
+                    <td class="py-3 px-4"><code class="text-brand-400">{{ v.name }}</code></td>
                     <td class="py-3 px-4 text-steel-300">{{ v.description }}</td>
                   </tr>
                 }
@@ -121,7 +121,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               <tbody class="divide-y divide-white/5">
                 @for (v of arrayValidators; track v.name) {
                   <tr class="hover:bg-white/[0.02]">
-                    <td class="py-3 px-4"><code class="text-pegasus-400">{{ v.name }}</code></td>
+                    <td class="py-3 px-4"><code class="text-brand-400">{{ v.name }}</code></td>
                     <td class="py-3 px-4 text-steel-300">{{ v.description }}</td>
                   </tr>
                 }
