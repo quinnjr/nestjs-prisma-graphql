@@ -1,6 +1,6 @@
 {
-  "name": "nestjs-prisma-graphql",
-  "version": "1.6.6",
+  "name": "@quinnjr/nestjs-prisma-graphql",
+  "version": "1.6.7",
   "type": "module",
   "license": "Apache-2.0",
   "description": "Generate NestJS GraphQL types from Prisma schema - ESM-first for Prisma 7+",
@@ -50,6 +50,7 @@
     "NOTICE"
   ],
   "publishConfig": {
+    "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {

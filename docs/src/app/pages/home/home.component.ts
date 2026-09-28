@@ -104,14 +104,14 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
 
           <div class="space-y-4">
             <app-code-block
-              [code]="'pnpm add -D nestjs-prisma-graphql'"
+              [code]="'pnpm add -D @quinnjr/nestjs-prisma-graphql'"
               language="bash"
             />
 
             <div class="text-center text-steel-500">or</div>
 
             <app-code-block
-              [code]="'npm install -D nestjs-prisma-graphql'"
+              [code]="'npm install -D @quinnjr/nestjs-prisma-graphql'"
               language="bash"
             />
           </div>
