@@ -26,10 +26,10 @@ An ESM-native Prisma generator that produces object types, inputs, args, enums, 
 
 ```bash
 # Using pnpm (recommended)
-pnpm add -D nestjs-prisma-graphql
+pnpm add -D @quinnjr/nestjs-prisma-graphql
 
 # Using npm
-npm install -D nestjs-prisma-graphql
+npm install -D @quinnjr/nestjs-prisma-graphql
 ```
 
 ## Quick Start

@@ -82,13 +82,13 @@ Generate object types, inputs, args, enums, and more from your Prisma schema for
 
 ```bash
 # Using pnpm (recommended)
-pnpm add -D nestjs-prisma-graphql
+pnpm add -D @quinnjr/nestjs-prisma-graphql
 
 # Using npm
-npm install -D nestjs-prisma-graphql
+npm install -D @quinnjr/nestjs-prisma-graphql
 
 # Using yarn
-yarn add -D nestjs-prisma-graphql
+yarn add -D @quinnjr/nestjs-prisma-graphql
 ```
 
 ### Peer Dependencies

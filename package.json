@@ -1,5 +1,5 @@
 {
-  "name": "nestjs-prisma-graphql",
+  "name": "@quinnjr/nestjs-prisma-graphql",
   "version": "1.6.7",
   "type": "module",
   "license": "Apache-2.0",
@@ -50,6 +50,7 @@
     "NOTICE"
   ],
   "publishConfig": {
+    "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
