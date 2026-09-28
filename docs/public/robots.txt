@@ -28,4 +28,4 @@ Allow: /
 User-agent: PerplexityBot
 Allow: /
 
-Sitemap: https://pegasusheavy.github.io/nestjs-prisma-graphql/sitemap.xml
+Sitemap: https://quinnjr.github.io/nestjs-prisma-graphql/sitemap.xml

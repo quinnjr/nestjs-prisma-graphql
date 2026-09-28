@@ -19,7 +19,7 @@ We take security seriously. If you discover a security vulnerability, please fol
 
 ### Do
 
-1. **Email us directly** at security@pegasusheavy.dev with:
+1. **Email us directly** at quinn.josephr@protonmail.com with:
    - Description of the vulnerability
    - Steps to reproduce
    - Potential impact
@@ -39,6 +39,7 @@ We take security seriously. If you discover a security vulnerability, please fol
 When using this generator:
 
 1. **Keep dependencies updated**
+
    ```bash
    pnpm update
    ```
@@ -48,6 +49,7 @@ When using this generator:
    - Always review generated types for sensitive fields
 
 3. **Use @HideField()**
+
    ```prisma
    model User {
      /// @HideField()

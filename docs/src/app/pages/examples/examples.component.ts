@@ -12,7 +12,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- Header -->
         <div class="mb-12">
           <nav class="flex items-center gap-2 text-sm text-steel-400 mb-4">
-            <a routerLink="/" class="hover:text-pegasus-400 transition-colors">Home</a>
+            <a routerLink="/" class="hover:text-brand-400 transition-colors">Home</a>
             <span>/</span>
             <span class="text-white">Examples</span>
           </nav>
@@ -25,7 +25,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- Blog Example -->
         <section class="mb-16">
           <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-            <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-pegasus-500/20 to-forge-500/20 flex items-center justify-center">📝</span>
+            <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500/20 to-forge-500/20 flex items-center justify-center">📝</span>
             Blog Application
           </h2>
 
@@ -39,7 +39,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- E-commerce Example -->
         <section class="mb-16">
           <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-            <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-pegasus-500/20 to-forge-500/20 flex items-center justify-center">🛒</span>
+            <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500/20 to-forge-500/20 flex items-center justify-center">🛒</span>
             E-commerce Store
           </h2>
 
@@ -53,7 +53,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- Multi-tenant Example -->
         <section class="mb-16">
           <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-            <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-pegasus-500/20 to-forge-500/20 flex items-center justify-center">🏢</span>
+            <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500/20 to-forge-500/20 flex items-center justify-center">🏢</span>
             Multi-tenant SaaS
           </h2>
 
@@ -64,7 +64,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- Custom Scalars Example -->
         <section class="mb-16">
           <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-            <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-pegasus-500/20 to-forge-500/20 flex items-center justify-center">🎯</span>
+            <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500/20 to-forge-500/20 flex items-center justify-center">🎯</span>
             Custom Scalars
           </h2>
 
@@ -81,7 +81,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- Platform Setup Examples -->
         <section class="mb-16">
           <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-            <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-pegasus-500/20 to-forge-500/20 flex items-center justify-center">🏎️</span>
+            <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500/20 to-forge-500/20 flex items-center justify-center">🏎️</span>
             Platform Setup (Express vs Fastify)
           </h2>
 
@@ -102,7 +102,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- Full CRUD Example -->
         <section class="mb-16">
           <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-            <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-pegasus-500/20 to-forge-500/20 flex items-center justify-center">🔄</span>
+            <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500/20 to-forge-500/20 flex items-center justify-center">🔄</span>
             Complete CRUD Resolver
           </h2>
 

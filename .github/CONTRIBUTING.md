@@ -207,9 +207,9 @@ Releases are automated via GitHub Actions:
 
 ## Getting Help
 
-- **Questions?** Open a [Discussion](https://github.com/PegasusHeavyIndustries/nestjs-prisma-graphql/discussions)
-- **Bugs?** Open an [Issue](https://github.com/PegasusHeavyIndustries/nestjs-prisma-graphql/issues)
-- **Security?** Email security@pegasusheavy.dev
+- **Questions?** Open a [Discussion](https://github.com/quinnjr/nestjs-prisma-graphql/discussions)
+- **Bugs?** Open an [Issue](https://github.com/quinnjr/nestjs-prisma-graphql/issues)
+- **Security?** Email quinn.josephr@protonmail.com
 
 ## License
 

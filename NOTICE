@@ -1,8 +1,8 @@
 nestjs-prisma-graphql
-Copyright 2026 Pegasus Heavy Industries LLC
+Copyright 2026 Joseph R. Quinn
 
-This product includes software developed at Pegasus Heavy Industries LLC
-(https://github.com/pegasusheavy).
+This product includes software developed by Joseph R. Quinn
+(https://github.com/quinnjr).
 
 This project is derived from prisma-nestjs-graphql by unlight
 (https://github.com/unlight/prisma-nestjs-graphql), originally licensed under

@@ -29,7 +29,7 @@ import 'prismjs/components/prism-graphql';
             class="p-1.5 rounded-md text-steel-400 hover:text-white hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100"
           >
             @if (copied()) {
-              <svg class="w-4 h-4 text-pegasus-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
             } @else {
@@ -53,7 +53,7 @@ import 'prismjs/components/prism-graphql';
           class="absolute top-3 right-3 p-2 rounded-lg text-steel-400 hover:text-white hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100"
         >
           @if (copied()) {
-            <svg class="w-4 h-4 text-pegasus-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
           } @else {

@@ -12,14 +12,14 @@ import { NgClass } from '@angular/common';
         <div class="flex items-center justify-between h-16">
           <!-- Logo -->
           <a routerLink="/" class="flex items-center gap-3 group">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-pegasus-500 to-forge-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-forge-500 flex items-center justify-center group-hover:scale-110 transition-transform">
               <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M6 18 L12 6 L18 18 Z" stroke-linejoin="round"/>
                 <circle cx="12" cy="14" r="2" fill="currentColor"/>
               </svg>
             </div>
             <span class="font-bold text-xl text-white hidden sm:block">
-              nestjs-prisma-<span class="text-pegasus-400">graphql</span>
+              nestjs-prisma-<span class="text-brand-400">graphql</span>
             </span>
           </a>
 
@@ -28,7 +28,7 @@ import { NgClass } from '@angular/common';
             @for (link of navLinks; track link.path) {
               <a
                 [routerLink]="link.path"
-                routerLinkActive="!text-pegasus-400 bg-pegasus-500/10"
+                routerLinkActive="!text-brand-400 bg-brand-500/10"
                 [routerLinkActiveOptions]="{ exact: link.path === '/' }"
                 class="px-4 py-2 rounded-lg text-steel-300 hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
               >
@@ -76,7 +76,7 @@ import { NgClass } from '@angular/common';
           @for (link of navLinks; track link.path) {
             <a
               [routerLink]="link.path"
-              routerLinkActive="!text-pegasus-400 bg-pegasus-500/10"
+              routerLinkActive="!text-brand-400 bg-brand-500/10"
               [routerLinkActiveOptions]="{ exact: link.path === '/' }"
               (click)="mobileOpen.set(false)"
               class="block px-4 py-3 rounded-lg text-steel-300 hover:text-white hover:bg-white/5 transition-all font-medium"

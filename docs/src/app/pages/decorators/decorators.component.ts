@@ -12,7 +12,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- Header -->
         <div class="mb-12">
           <nav class="flex items-center gap-2 text-sm text-steel-400 mb-4">
-            <a routerLink="/" class="hover:text-pegasus-400 transition-colors">Home</a>
+            <a routerLink="/" class="hover:text-brand-400 transition-colors">Home</a>
             <span>/</span>
             <span class="text-white">Decorators</span>
           </nav>
@@ -35,7 +35,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- HideField -->
         <section class="mb-12">
           <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-            <code class="text-pegasus-400">&#64;HideField()</code>
+            <code class="text-brand-400">&#64;HideField()</code>
           </h2>
           <p class="text-steel-300 mb-4">
             Hide a field from the GraphQL schema. The field will still exist in the Prisma model
@@ -57,7 +57,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- FieldType -->
         <section class="mb-12">
           <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-            <code class="text-pegasus-400">&#64;FieldType()</code>
+            <code class="text-brand-400">&#64;FieldType()</code>
           </h2>
           <p class="text-steel-300 mb-4">
             Override the GraphQL type for a field. Useful for custom scalars or when you want
@@ -72,7 +72,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- PropertyType -->
         <section class="mb-12">
           <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-            <code class="text-pegasus-400">&#64;PropertyType()</code>
+            <code class="text-brand-400">&#64;PropertyType()</code>
           </h2>
           <p class="text-steel-300 mb-4">
             Override the TypeScript property type. This affects the generated class property
@@ -84,7 +84,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- Directive -->
         <section class="mb-12">
           <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-            <code class="text-pegasus-400">&#64;Directive()</code>
+            <code class="text-brand-400">&#64;Directive()</code>
           </h2>
           <p class="text-steel-300 mb-4">
             Add GraphQL directives to fields. These are passed through to the generated schema.
@@ -95,7 +95,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <!-- Validators -->
         <section class="mb-12">
           <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-            <code class="text-pegasus-400">&#64;Validator.*()</code>
+            <code class="text-brand-400">&#64;Validator.*()</code>
           </h2>
           <p class="text-steel-300 mb-4">
             Add class-validator decorators to input fields. Requires configuring the Validator
@@ -104,7 +104,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           <app-code-block [code]="validatorExample" language="graphql" />
 
           <div class="mt-4">
-            <a routerLink="/validators" class="inline-flex items-center gap-2 text-pegasus-400 hover:text-pegasus-300 font-medium transition-colors">
+            <a routerLink="/validators" class="inline-flex items-center gap-2 text-brand-400 hover:text-brand-300 font-medium transition-colors">
               See full validator documentation
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -151,15 +151,15 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               </thead>
               <tbody class="divide-y divide-white/5">
                 <tr class="hover:bg-white/[0.02]">
-                  <td class="py-3 px-4"><code class="text-pegasus-400">input: true</code></td>
+                  <td class="py-3 px-4"><code class="text-brand-400">input: true</code></td>
                   <td class="py-3 px-4 text-steel-300">Apply to input types (CreateInput, UpdateInput, etc.)</td>
                 </tr>
                 <tr class="hover:bg-white/[0.02]">
-                  <td class="py-3 px-4"><code class="text-pegasus-400">output: true</code></td>
+                  <td class="py-3 px-4"><code class="text-brand-400">output: true</code></td>
                   <td class="py-3 px-4 text-steel-300">Apply to output types (Model, Output)</td>
                 </tr>
                 <tr class="hover:bg-white/[0.02]">
-                  <td class="py-3 px-4"><code class="text-pegasus-400">model: true</code></td>
+                  <td class="py-3 px-4"><code class="text-brand-400">model: true</code></td>
                   <td class="py-3 px-4 text-steel-300">Apply to the main model class</td>
                 </tr>
               </tbody>
