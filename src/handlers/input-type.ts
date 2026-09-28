@@ -10,6 +10,7 @@ import {
 } from 'ts-morph';
 
 import { BeforeGenerateField } from '../event-names.js';
+import { classTransformerTypeArgument } from '../helpers/class-transformer-type-argument.js';
 import { getGraphqlImport } from '../helpers/get-graphql-import.js';
 import { getGraphqlInputType } from '../helpers/get-graphql-input-type.js';
 import { getPropertyType } from '../helpers/get-property-type.js';
@@ -309,14 +310,10 @@ export function inputType(
               ) === true))
       ) {
         importDeclarations.add('Type', 'class-transformer');
-        if (useGetType) {
-          property.decorators.push({
-            arguments: [`getType('${graphqlType}')`],
-            name: 'Type',
-          });
-        } else {
-          property.decorators.push({ arguments: [`() => ${graphqlType}`], name: 'Type' });
-        }
+        property.decorators.push({
+          arguments: [classTransformerTypeArgument(graphqlType, useGetType)],
+          name: 'Type',
+        });
       }
 
       if (isCustomsApplicable) {
