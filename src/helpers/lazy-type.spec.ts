@@ -1,7 +1,11 @@
+import { StructureKind } from 'ts-morph';
 import { describe, expect, it } from 'vitest';
 
-import { ImportDeclarationMap } from './import-declaration-map.js';
-import { addLazyTypeImport, wrapLazyPropertyType } from './lazy-type.js';
+import {
+  createLazyTypeAlias,
+  withExplicitTypeName,
+  wrapLazyPropertyType,
+} from './lazy-type.js';
 
 describe('wrapLazyPropertyType', () => {
   it('wraps only the matching class reference', () => {
@@ -18,16 +22,37 @@ describe('wrapLazyPropertyType', () => {
   });
 });
 
-describe('addLazyTypeImport', () => {
-  it('adds an inline type-only import specifier', () => {
-    const map = new ImportDeclarationMap();
-    addLazyTypeImport(map, '../type-registry.js');
+describe('createLazyTypeAlias', () => {
+  it('creates a non-exported identity alias', () => {
+    const alias = createLazyTypeAlias();
 
-    expect([...map.toStatements()]).toEqual([
-      expect.objectContaining({
-        moduleSpecifier: '../type-registry.js',
-        namedImports: [{ isTypeOnly: true, name: '__Lazy' }],
-      }),
+    expect(alias).toMatchObject({
+      kind: StructureKind.TypeAlias,
+      name: '__Lazy',
+      type: 'T',
+      typeParameters: ['T'],
+    });
+    expect(alias.isExported).toBeUndefined();
+  });
+});
+
+describe('withExplicitTypeName', () => {
+  it('adds the name when there are no arguments', () => {
+    expect(withExplicitTypeName([], 'Post')).toEqual(["'Post'"]);
+  });
+
+  it('puts the name before an options object', () => {
+    expect(withExplicitTypeName(['{ isAbstract: true }'], 'Post')).toEqual([
+      "'Post'",
+      '{ isAbstract: true }',
     ]);
+  });
+
+  it('keeps a name that is already set', () => {
+    expect(withExplicitTypeName(["'Article'", '{}'], 'Post')).toEqual([
+      "'Article'",
+      '{}',
+    ]);
+    expect(withExplicitTypeName(['"Article"'], 'Post')).toEqual(['"Article"']);
   });
 });

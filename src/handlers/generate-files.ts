@@ -12,15 +12,17 @@ import {
 } from 'ts-morph';
 
 import { ImportDeclarationMap } from '../helpers/import-declaration-map.js';
+import { LAZY_TYPE_NAME } from '../helpers/lazy-type.js';
 import { ok } from '../helpers/type-safe-assert.js';
+import { suppressTypeErrors } from './suppress-type-errors.js';
 
 /**
  * Generated root helper modules that emitSingle keeps as separate files,
  * because their functions and type aliases are not merged into index.ts.
  */
-const SINGLE_FILE_HELPERS = new Set(['type-registry', 'decimal-helpers']);
+const SINGLE_FILE_HELPERS = new Set(['decimal-helpers']);
 /** Helper specifiers after rewriting by markSingleFileHelperImports */
-const SINGLE_FILE_HELPER_SPECIFIER = /^\.\/(?:type-registry|decimal-helpers)(?:\.js)?$/;
+const SINGLE_FILE_HELPER_SPECIFIER = /^\.\/decimal-helpers(?:\.js)?$/;
 
 /**
  * Rewrites imports of root helper modules to their index.ts-relative
@@ -57,7 +59,7 @@ function markSingleFileHelperImports(
 
 /**
  * Maps an import of a root helper module to its specifier from the single
- * index.ts (`./type-registry.js`). The specifier is resolved against the
+ * index.ts (`./decimal-helpers.js`). The specifier is resolved against the
  * importing file, so a model file that happens to be named like a helper in a
  * subdirectory is not mistaken for it.
  */
@@ -136,11 +138,6 @@ export async function generateFiles(args: EventArguments): Promise<void> {
       if (isRootFile && SINGLE_FILE_HELPERS.has(baseName)) {
         return [];
       }
-      // index.ts registers every type itself, so the per-file registration list is obsolete
-      if (isRootFile && baseName === 'register-all-types') {
-        project.removeSourceFile(s);
-        return [];
-      }
       const classDeclaration = s.getClass(() => true);
       const stmts = s.getStructure().statements;
       markSingleFileHelperImports(stmts, s.getDirectoryPath(), rootDirectory.getPath());
@@ -175,13 +172,12 @@ export async function generateFiles(args: EventArguments): Promise<void> {
     const helperImports: HelperImports = new Map();
     const enums: Array<StatementStructures | string> = [];
     const classes: ClassDeclarationStructure[] = [];
-    const registrations: string[] = [];
+    // Files that use the __Lazy alias each declare it; the single file needs it once
+    let lazyTypeAlias: StatementStructures | undefined;
     for (const statement of statements as Array<StatementStructures | string>) {
       if (typeof statement === 'string') {
         if (statement.startsWith('registerEnumType')) {
           enums.push(statement);
-        } else if (statement.trimStart().startsWith('registerType(')) {
-          registrations.push(statement.trim());
         }
         continue;
       }
@@ -214,6 +210,12 @@ export async function generateFiles(args: EventArguments): Promise<void> {
           }
           break;
         }
+        case StructureKind.TypeAlias: {
+          if (statement.name === LAZY_TYPE_NAME) {
+            lazyTypeAlias ??= statement;
+          }
+          break;
+        }
         case StructureKind.Enum: {
           enums.unshift(statement);
           break;
@@ -235,8 +237,19 @@ export async function generateFiles(args: EventArguments): Promise<void> {
     }
     sourceFile.set({
       kind: StructureKind.SourceFile,
-      statements: [...imports.toStatements(), ...enums, ...classes, ...registrations],
+      statements: [
+        ...imports.toStatements(),
+        ...(lazyTypeAlias ? [lazyTypeAlias] : []),
+        ...enums,
+        ...classes,
+      ],
     });
+
+    // The merge rebuilt index.ts from structures, which drops the // @ts-nocheck
+    // added before GenerateFiles, so apply esmSuppressTypeErrors again
+    if (config.esmCompatible) {
+      suppressTypeErrors(args);
+    }
   }
 
   const sourceFiles = project.getSourceFiles();

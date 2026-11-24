@@ -18,14 +18,17 @@ import { getOutputTypeName } from '../helpers/get-output-type-name.js';
 import { getPropertyType } from '../helpers/get-property-type.js';
 import { ImportDeclarationMap } from '../helpers/import-declaration-map.js';
 import { isManyAndReturnOutputType } from '../helpers/is-many-and-return.js';
-import { addLazyTypeImport, wrapLazyPropertyType } from '../helpers/lazy-type.js';
+import {
+  createLazyTypeAlias,
+  withExplicitTypeName,
+  wrapLazyPropertyType,
+} from '../helpers/lazy-type.js';
 import {
   createObjectSettings,
   type ObjectSetting,
   type ObjectSettings,
 } from '../helpers/object-settings.js';
 import { propertyStructure } from '../helpers/property-structure.js';
-import { relativePath } from '../helpers/relative-path.js';
 import { ok } from '../helpers/type-safe-assert.js';
 
 const nestjsGraphql = '@nestjs/graphql';
@@ -39,7 +42,6 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
     getSourceFile,
     modelFields,
     models,
-    output,
   } = args;
 
   if (isManyAndReturnOutputType(outputType.name)) {
@@ -99,23 +101,8 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
   importDeclarations.add('Field', nestjsGraphql);
   importDeclarations.add('ObjectType', nestjsGraphql);
 
-  // Track types that need lazy loading due to circular dependencies
-  const lazyTypes = new Set<string>();
-
-  // Add type registry imports if ESM compatible mode is enabled
-  let typeRegistryPath = '';
-  if (config.esmCompatible) {
-    typeRegistryPath = relativePath(
-      sourceFile.getFilePath(),
-      `${output}/type-registry.ts`,
-    );
-    // Add .js extension for ESM module resolution
-    if (!typeRegistryPath.endsWith('.js')) {
-      typeRegistryPath += '.js';
-    }
-    importDeclarations.add('registerType', typeRegistryPath);
-    importDeclarations.add('getType', typeRegistryPath);
-  }
+  // Whether any property is typed through the file-local __Lazy alias
+  let usesLazyType = false;
 
   for (const field of outputType.fields) {
     if (config.omitModelsCount && field.name === '_count') {
@@ -158,7 +145,7 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
     }
 
     let graphqlType: string;
-    let useGetType = false;
+    let useLazyType = false;
 
     if (fieldType === undefined) {
       const graphqlImport = getGraphqlImport({
@@ -180,29 +167,33 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
         graphqlImport.specifier !== undefined &&
         graphqlImport.specifier.length > 0
       ) {
-        // Check for circular dependency in ESM mode
-        const isCircular =
+        // In ESM mode, a relation that is part of an import cycle is imported normally
+        // (the @Field thunk reads it after loading) and typed through __Lazy so decorator
+        // metadata does not read the class while its module is still loading.
+        useLazyType =
           config.esmCompatible &&
           location === 'outputObjectTypes' &&
           namespace === 'model' &&
           hasCircularDependency(circularDependencies, outputType.name, outputTypeName);
 
-        if (isCircular) {
-          // Use regular import (not type-only) so registerType() executes
-          importDeclarations.add(graphqlImport.name, graphqlImport.specifier);
-          lazyTypes.add(graphqlImport.name);
-          useGetType = true;
-        } else {
-          importDeclarations.add(graphqlImport.name, graphqlImport.specifier);
-        }
+        importDeclarations.add(graphqlImport.name, graphqlImport.specifier);
       }
     } else {
       graphqlType = fieldType.name;
       importDeclarations.create({ ...fieldType });
     }
 
-    if (useGetType) {
-      addLazyTypeImport(importDeclarations, typeRegistryPath);
+    // A @PropertyType override leaves nothing to wrap, and an unused alias fails
+    // under noUnusedLocals
+    const wrappedPropertyType = useLazyType
+      ? wrapLazyPropertyType(propertyType, graphqlType)
+      : propertyType;
+    if (
+      wrappedPropertyType.some(
+        (wrappedType, index) => wrappedType !== propertyType[index],
+      )
+    ) {
+      usesLazyType = true;
     }
 
     const property = propertyStructure({
@@ -211,9 +202,7 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
       isList,
       isNullable: field.isNullable,
       name: field.name,
-      propertyType: useGetType
-        ? wrapLazyPropertyType(propertyType, graphqlType)
-        : propertyType,
+      propertyType: wrappedPropertyType,
     });
 
     if (
@@ -252,14 +241,7 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
       property.decorators.push({ arguments: [], name: 'HideField' });
     } else {
       // Generate `@Field()` decorator
-      let typeExpression: string;
-      if (useGetType) {
-        typeExpression = isList
-          ? `() => [getType('${graphqlType}')]`
-          : `() => getType('${graphqlType}')`;
-      } else {
-        typeExpression = isList ? `() => [${graphqlType}]` : `() => ${graphqlType}`;
-      }
+      const typeExpression = isList ? `() => [${graphqlType}]` : `() => ${graphqlType}`;
 
       property.decorators.push({
         arguments: [
@@ -327,15 +309,17 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
   }
 
   // Build statements array
+  // An explicit GraphQL name survives bundlers and minifiers renaming the class
+  decorator.arguments = withExplicitTypeName(
+    (decorator.arguments ?? []) as string[],
+    outputType.name,
+  );
+
   const statements: Array<StatementStructures | string> = [
     ...importDeclarations.toStatements(),
+    ...(usesLazyType ? [createLazyTypeAlias()] : []),
     classStructure,
   ];
-
-  // Add registerType call if ESM compatible mode is enabled
-  if (config.esmCompatible) {
-    statements.push(`\nregisterType('${outputType.name}', ${outputType.name});`);
-  }
 
   if (exportDeclaration) {
     sourceFile.set({

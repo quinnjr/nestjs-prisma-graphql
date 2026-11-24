@@ -9,6 +9,7 @@ import { getGraphqlImport } from '../helpers/get-graphql-import.js';
 import { getOutputTypeName } from '../helpers/get-output-type-name.js';
 import { getPropertyType } from '../helpers/get-property-type.js';
 import { ImportDeclarationMap } from '../helpers/import-declaration-map.js';
+import { withExplicitTypeName } from '../helpers/lazy-type.js';
 import { propertyStructure } from '../helpers/property-structure.js';
 import { ok } from '../helpers/type-safe-assert.js';
 
@@ -53,7 +54,8 @@ export function outputType(outputTypeArg: OutputType, args: EventArguments): voi
   const classStructure: ClassDeclarationStructure = {
     decorators: [
       {
-        arguments: [],
+        // An explicit GraphQL name survives bundlers and minifiers renaming the class
+        arguments: withExplicitTypeName([], outputTypeArg.name),
         name: 'ObjectType',
       },
     ],

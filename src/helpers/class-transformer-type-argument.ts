@@ -1,12 +1,9 @@
 /**
  * The argument for a class-transformer `@Type()` decorator on a nested input.
  *
- * `@Type()` takes a function returning the class, so the registry lookup must
- * be wrapped in a thunk just like the direct reference.
+ * `@Type()` takes a function returning the class, so the reference is only
+ * read after all modules have loaded.
  */
-export function classTransformerTypeArgument(
-  graphqlType: string,
-  useGetType: boolean,
-): string {
-  return useGetType ? `() => getType('${graphqlType}')` : `() => ${graphqlType}`;
+export function classTransformerTypeArgument(graphqlType: string): string {
+  return `() => ${graphqlType}`;
 }

@@ -46,14 +46,13 @@ import { modelData } from './handlers/model-data.js';
 import { modelOutputType } from './handlers/model-output-type.js';
 import { noAtomicOperations } from './handlers/no-atomic-operations.js';
 import { outputType } from './handlers/output-type.js';
-import { patchTypeRegistry } from './handlers/patch-type-registry.js';
 import { postProcessImports } from './handlers/post-process-imports.js';
 import { purgeOutput } from './handlers/purge-output.js';
 import { ReExport, reExport } from './handlers/re-export.js';
-import { generateRegisterAllTypes } from './handlers/register-all-types.js';
 import { registerEnum } from './handlers/register-enum.js';
+import { announceTypeRegistryRemoval } from './handlers/removed-type-registry.js';
 import { requireSingleFieldsInWhereUniqueInput } from './handlers/require-single-fields-in-whereunique-input.js';
-import { generateTypeRegistry } from './handlers/type-registry.js';
+import { suppressTypeErrors } from './handlers/suppress-type-errors.js';
 import { warning } from './handlers/warning.js';
 import { createConfig } from './helpers/create-config.js';
 import {
@@ -201,11 +200,9 @@ export async function generate(
 
   await eventEmitter.emit('Begin', eventArguments);
 
-  // Generate type registry file for ESM compatibility
-  // Must be after 'Begin' event since purgeOutput deletes all files on Begin
-  if (config.esmCompatible) {
-    generateTypeRegistry(eventArguments);
-  }
+  // 2.0: the ESM type registry is gone. Say so loudly and delete files left by 1.x,
+  // so a stale register-all-types cannot keep an old import working.
+  announceTypeRegistryRemoval(eventArguments);
 
   // Generate decimal helpers for Prisma 7+ compatibility
   // This replaces the dependency on prisma-graphql-type-decimal
@@ -274,15 +271,11 @@ export async function generate(
     // 1. Generate barrel exports (index.ts files) if reExport="None"
     generateBarrelExports(eventArguments);
 
-    // 2. Add .js extensions and convert type imports for ESM
+    // 2. Add .js extensions to relative imports for ESM
     postProcessImports(eventArguments);
 
-    // 3. Patch type-registry and add @ts-nocheck
-    patchTypeRegistry(eventArguments);
-
-    // 4. Generate register-all-types file
-    // Must be last so it can scan all final files with registerType()
-    generateRegisterAllTypes(eventArguments);
+    // 3. Add // @ts-nocheck when esmSuppressTypeErrors is set
+    suppressTypeErrors(eventArguments);
   }
 
   await eventEmitter.emit('GenerateFiles', eventArguments);

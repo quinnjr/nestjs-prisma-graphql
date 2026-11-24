@@ -42,8 +42,8 @@ export function generateBarrelExports(args: EventArguments): void {
   for (const dir of subdirs) {
     const dirName = dir.getBaseName();
 
-    // Skip hidden directories. Root helpers (type-registry.ts, ...) are files, so a
-    // model directory such as `type-registry/` must not be skipped.
+    // Skip hidden directories. Root helpers (decimal-helpers.ts) are files, so a
+    // model directory named like one must not be skipped.
     if (dirName.startsWith('.')) {
       continue;
     }

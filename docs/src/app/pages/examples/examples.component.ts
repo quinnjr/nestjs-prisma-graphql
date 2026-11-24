@@ -537,7 +537,6 @@ import { GraphQLDecimal } from 'prisma-graphql-type-decimal';
 export class GraphQLConfigModule {}`;
 
   expressSetup = `import 'reflect-metadata';
-import './@generated/register-all-types.js';
 
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
@@ -559,7 +558,6 @@ async function bootstrap() {
 bootstrap();`;
 
   fastifyMercuriusSetup = `import 'reflect-metadata';
-import './@generated/register-all-types.js';
 
 import { NestFactory } from '@nestjs/core';
 import {
