@@ -739,7 +739,9 @@ This generator is built from the ground up for ESM (ECMAScript Modules).
 > `type-registry.ts` and `register-all-types.ts` are no longer generated, and `registerType()` /
 > `getType()` no longer exist. The generator prints a notice about this on every run in
 > `esmCompatible` mode, and deletes those two files if an older version left them in your output
-> directory.
+> directory. It also deletes generated class files from 1.x that are no longer produced (for
+> example for a model you have since removed): without `purgeOutput` they would stay behind,
+> still importing the registry, and break the build. Each deleted file is logged.
 
 What to change in your application:
 

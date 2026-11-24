@@ -1,6 +1,6 @@
 import type { GeneratorConfiguration } from '../types.js';
 
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createTestProject } from '../test/test-utils.js';
 import {
   announceTypeRegistryRemoval,
+  removeOrphanedRegistryConsumers,
   removeStaleTypeRegistryFiles,
   TYPE_REGISTRY_REMOVED_NOTICE,
 } from './removed-type-registry.js';
@@ -122,6 +123,90 @@ describe('removed type registry', () => {
       );
 
       expect(removeStaleTypeRegistryFiles({ output, project }, log)).toEqual([]);
+      expect(project.getSourceFiles()).toHaveLength(1);
+    });
+  });
+
+  describe('removeOrphanedRegistryConsumers', () => {
+    const ORPHAN = `import { Field, ObjectType } from '@nestjs/graphql';
+import { registerType } from '../type-registry.js';
+import { getType } from '../type-registry.js';
+
+@ObjectType()
+export class Gone {
+  @Field(() => getType('User'))
+  user?: unknown;
+}
+
+registerType('Gone', Gone);
+`;
+    const REGENERATED = `import { Field, ObjectType } from '@nestjs/graphql';
+
+@ObjectType('User')
+export class User {
+  @Field(() => String)
+  id!: string;
+}
+`;
+
+    it('deletes 1.x class files that were not regenerated, with compiled forms', () => {
+      const project = createTestProject();
+      mkdirSync(file('gone'));
+      for (const name of [
+        'gone/gone.model.ts',
+        'gone/gone.model.js',
+        'gone/gone.model.d.ts',
+      ]) {
+        writeFileSync(file(name), ORPHAN);
+      }
+      project.addSourceFileAtPath(file('gone/gone.model.ts'));
+      project.createSourceFile(file('user/user.model.ts'), REGENERATED);
+
+      const removed = removeOrphanedRegistryConsumers(
+        { config: esmConfig(true), output, project },
+        log,
+      );
+
+      expect(removed).toEqual([file('gone/gone.model.ts')]);
+      expect(project.getSourceFiles().map(f => f.getBaseName())).toEqual([
+        'user.model.ts',
+      ]);
+      expect(existsSync(file('gone/gone.model.ts'))).toBe(false);
+      expect(existsSync(file('gone/gone.model.js'))).toBe(false);
+      expect(existsSync(file('gone/gone.model.d.ts'))).toBe(false);
+      expect(logs.at(-1)).toContain('purgeOutput');
+    });
+
+    it('keeps files that only look partly like 1.x output', () => {
+      const project = createTestProject();
+      // A hand-written file that mentions registerType but is not a generated class file
+      project.createSourceFile(
+        file('custom.ts'),
+        "import { registerType } from './type-registry.js';\nexport const x = registerType;\n",
+      );
+      // A decorated class that does not import the registry
+      project.createSourceFile(file('user/user.model.ts'), REGENERATED);
+
+      expect(
+        removeOrphanedRegistryConsumers(
+          { config: esmConfig(true), output, project },
+          log,
+        ),
+      ).toEqual([]);
+      expect(project.getSourceFiles()).toHaveLength(2);
+      expect(logs).toEqual([]);
+    });
+
+    it('does nothing without esmCompatible', () => {
+      const project = createTestProject();
+      project.createSourceFile(file('gone/gone.model.ts'), ORPHAN);
+
+      expect(
+        removeOrphanedRegistryConsumers(
+          { config: esmConfig(false), output, project },
+          log,
+        ),
+      ).toEqual([]);
       expect(project.getSourceFiles()).toHaveLength(1);
     });
   });

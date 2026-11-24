@@ -235,11 +235,20 @@ export async function generateFiles(args: EventArguments): Promise<void> {
         namedImports: [...specifiers.values()],
       });
     }
+    // The emitSingle ClassProperty handler rewrites non-list object types to
+    // InstanceType<typeof X>, which can leave the alias without a single use
+    const usesLazyAlias = classes.some(classStructure =>
+      (classStructure.properties ?? []).some(
+        property =>
+          typeof property.type === 'string' &&
+          property.type.includes(`${LAZY_TYPE_NAME}<`),
+      ),
+    );
     sourceFile.set({
       kind: StructureKind.SourceFile,
       statements: [
         ...imports.toStatements(),
-        ...(lazyTypeAlias ? [lazyTypeAlias] : []),
+        ...(lazyTypeAlias && usesLazyAlias ? [lazyTypeAlias] : []),
         ...enums,
         ...classes,
       ],

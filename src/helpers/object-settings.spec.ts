@@ -565,5 +565,25 @@ describe('createObjectSettings', () => {
       expect(directive).toBeDefined();
       expect(directive?.from).toBe('@nestjs/graphql');
     });
+
+    it('should pass a plain string directive as the decorator argument', () => {
+      const { settings } = createObjectSettings({
+        config,
+        text: `@Directive('@deprecated(reason: "Use newField instead")')`,
+      });
+
+      expect(settings.find(s => s.name === 'Directive')?.arguments).toEqual([
+        `'@deprecated(reason: "Use newField instead")'`,
+      ]);
+    });
+
+    it('should keep the options object form', () => {
+      const { settings } = createObjectSettings({
+        config,
+        text: "@Directive({ arguments: ['@upper'] })",
+      });
+
+      expect(settings.find(s => s.name === 'Directive')?.arguments).toEqual(["'@upper'"]);
+    });
   });
 });

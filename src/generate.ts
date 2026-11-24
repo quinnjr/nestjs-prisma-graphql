@@ -50,7 +50,10 @@ import { postProcessImports } from './handlers/post-process-imports.js';
 import { purgeOutput } from './handlers/purge-output.js';
 import { ReExport, reExport } from './handlers/re-export.js';
 import { registerEnum } from './handlers/register-enum.js';
-import { announceTypeRegistryRemoval } from './handlers/removed-type-registry.js';
+import {
+  announceTypeRegistryRemoval,
+  removeOrphanedRegistryConsumers,
+} from './handlers/removed-type-registry.js';
 import { requireSingleFieldsInWhereUniqueInput } from './handlers/require-single-fields-in-whereunique-input.js';
 import { suppressTypeErrors } from './handlers/suppress-type-errors.js';
 import { warning } from './handlers/warning.js';
@@ -261,6 +264,11 @@ export async function generate(
       await eventEmitter.emit('ArgsType', field, eventArguments);
     }
   }
+
+  // Every file regenerated above no longer imports the type registry. Anything in the
+  // output directory that still does is a 1.x orphan (possible without purgeOutput) and
+  // would break the build once re-exported, so delete it before barrels are built.
+  removeOrphanedRegistryConsumers(eventArguments);
 
   await eventEmitter.emit('BeforeGenerateFiles', eventArguments);
 

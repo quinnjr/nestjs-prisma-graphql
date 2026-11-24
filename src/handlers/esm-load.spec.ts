@@ -36,6 +36,10 @@ interface ProjectOptions {
   /** Where app.ts imports the generated classes from */
   imports?: 'directories' | 'root';
   withDecimal?: boolean;
+  /** Files written into the output directory before generating (path -> content) */
+  seedFiles?: Record<string, string>;
+  /** Replaces the default models (User, Post, Lazy) */
+  models?: string;
 }
 
 interface BuiltProject {
@@ -70,9 +74,35 @@ function buildProject(options: ProjectOptions): BuiltProject {
     esmCompatible = true,
     generatorOptions = '',
     imports = 'directories',
+    models,
     moduleType = 'module',
+    seedFiles = {},
     withDecimal = false,
   } = options;
+  const defaultModels = `model User {
+  id        Int      @id
+  level     Level?
+${withDecimal ? '  amount    Decimal?\n' : ''}  posts     Post[]
+  lazies    Lazy[]
+  manager   User?    @relation("manager", fields: [managerId], references: [id])
+  managerId Int?
+  reports   User[]   @relation("manager")
+}
+
+model Post {
+  id       Int     @id
+  authorId Int
+  author   User    @relation(fields: [authorId], references: [id])
+  /// @Directive('@deprecated(reason: "Use title instead")')
+  legacy   String?
+}
+
+model Lazy {
+  id     Int  @id
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+}
+`;
   const directory = mkdtempSync(path.join(tmpdir(), 'npg-esm-'));
   const isEsm = moduleType === 'module';
 
@@ -108,28 +138,7 @@ enum Level {
   HIGH
 }
 
-model User {
-  id        Int      @id
-  level     Level?
-${withDecimal ? '  amount    Decimal?\n' : ''}  posts     Post[]
-  lazies    Lazy[]
-  manager   User?    @relation("manager", fields: [managerId], references: [id])
-  managerId Int?
-  reports   User[]   @relation("manager")
-}
-
-model Post {
-  id       Int  @id
-  authorId Int
-  author   User @relation(fields: [authorId], references: [id])
-}
-
-model Lazy {
-  id     Int  @id
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
-}
-`,
+${models ?? defaultModels}`,
   );
 
   const from = (model: string): string =>
@@ -214,6 +223,12 @@ void main();
       : "module.exports = require('../../client/client.js');\n",
   );
 
+  for (const [relativePath, content] of Object.entries(seedFiles)) {
+    const seedPath = path.join(directory, 'generated', relativePath);
+    mkdirSync(path.dirname(seedPath), { recursive: true });
+    writeFileSync(seedPath, content);
+  }
+
   exec(directory, bin('prisma'), ['generate', '--schema', 'schema.prisma']);
 
   let compileError: unknown;
@@ -280,6 +295,17 @@ describe('esmCompatible output has no type registry', () => {
     expect(sdl).toMatch(/type User \{[^}]*posts: \[Post!\]/);
     expect(sdl).toMatch(/type User \{[^}]*manager: User\b/);
     expect(sdl).toMatch(/input PostListRelationFilter \{[^}]*every: PostWhereInput/);
+  });
+
+  it('emits a /// @Directive given as a plain string with its argument', () => {
+    // printSchema does not print applied directives, so check the generated source;
+    // the compile and load tests above prove the decorator call is valid
+    const model = readFileSync(
+      path.join(built.directory, 'generated/post/post.model.ts'),
+      'utf8',
+    );
+
+    expect(model).toContain(`@Directive('@deprecated(reason: "Use title instead")')`);
   });
 
   it('loads every generated file as the first import, in its own process', () => {
@@ -375,6 +401,14 @@ console.log(JSON.stringify(failures));
       name: 'reExport = All',
       options: { generatorOptions: '  reExport = All', imports: 'root' },
     },
+    {
+      // Model directories that only contain sub-directories get namespace barrels
+      name: 'reExport = Directories with nested {plural.type} directories',
+      options: {
+        generatorOptions:
+          '  reExport = Directories\n  outputFilePattern = "{model}/{plural.type}/{name}.{type}.ts"',
+      },
+    },
   ] as Array<{ name: string; options: ProjectOptions }>)(
     'layout: $name',
     ({ name, options }) => {
@@ -416,6 +450,74 @@ describe('esmCompatible with combineScalarFilters and noAtomicOperations', () =>
     expect(built.compileError).toBeUndefined();
     expect(buildSdl(built.directory)).toMatch(/type Post \{[^}]*author: User!/);
   }, 120_000);
+});
+
+describe('upgrading a 1.x output directory without purgeOutput', () => {
+  let built: BuiltProject;
+
+  beforeAll(() => {
+    built = project('upgrade', {
+      seedFiles: {
+        // A model that no longer exists in the schema
+        'gone/gone.model.ts': `import { Field, ObjectType } from '@nestjs/graphql';
+import { registerType } from '../type-registry.js';
+import { getType } from '../type-registry.js';
+
+@ObjectType()
+export class Gone {
+  @Field(() => getType('User'))
+  user?: unknown;
+}
+
+registerType('Gone', Gone);
+`,
+        'register-all-types.ts': `import { markRegistrationComplete } from './type-registry.js';
+import './gone/gone.model.js';
+markRegistrationComplete();
+`,
+        'type-registry.ts': `const registry = new Map<string, unknown>();
+export function registerType(name: string, type: unknown): void { registry.set(name, type); }
+export function getType<T = any>(name: string): T { return registry.get(name) as T; }
+export function markRegistrationComplete(): void {}
+`,
+      },
+    });
+  }, 240_000);
+
+  it('removes the registry and the orphaned 1.x file, then compiles and loads', () => {
+    const files = listFiles(path.join(built.directory, 'generated'), '.ts');
+
+    expect(
+      files.filter(file => /gone|type-registry|register-all-types/.test(file)),
+    ).toEqual([]);
+    expect(built.compileError).toBeUndefined();
+    expect(buildSdl(built.directory)).toMatch(/type Post \{[^}]*author: User!/);
+  }, 120_000);
+});
+
+describe('emitSingle with only non-list relations', () => {
+  it('does not declare an unused __Lazy alias', () => {
+    // emitSingle rewrites non-list object types to InstanceType<typeof X>
+    const built = project('single one-to-one', {
+      generatorOptions: '  emitSingle = true\n  emitBlocks = ["models"]',
+      imports: 'root',
+      models: `model User {
+  id      Int      @id
+  profile Profile?
+}
+
+model Profile {
+  id     Int  @id
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id])
+}
+`,
+    });
+    const index = readFileSync(path.join(built.directory, 'generated/index.ts'), 'utf8');
+
+    expect(index).not.toContain('__Lazy');
+    expect(index).toContain('class Profile');
+  }, 240_000);
 });
 
 describe('esmSuppressTypeErrors', () => {

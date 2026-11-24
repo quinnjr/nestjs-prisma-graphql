@@ -64,7 +64,8 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
               <code>type-registry.ts</code> and <code>register-all-types.ts</code> are no longer
               generated, and <code>registerType()</code> / <code>getType()</code> no longer exist.
               The generator prints a notice on every run and deletes those files if an older
-              version left them in your output directory.
+              version left them in your output directory, along with 1.x class files that are no
+              longer generated and still import the registry.
             </p>
           </div>
           <p class="text-steel-300 mb-4">

@@ -20,6 +20,7 @@ export const TYPE_REGISTRY_REMOVED_NOTICE = [
   "  - remove `import './@generated/register-all-types.js'` from your app entry point",
   "  - replace getType('X') / registerType() in your own code with the class itself",
   '  - nothing has to be imported first any more: import generated types directly',
+  '  - files from 1.x that are no longer generated are deleted from the output directory',
   '  Migration guide: https://github.com/quinnjr/nestjs-prisma-graphql#migrating-to-20',
   '',
 ].join('\n');
@@ -80,6 +81,63 @@ export function removeStaleTypeRegistryFiles(
       removed.push(filePath);
       log(`nestjs-prisma-graphql: deleted stale type registry file ${filePath}`);
     }
+  }
+
+  return removed;
+}
+
+const REGISTRY_IMPORT = /from\s+['"][^'"]*\/type-registry(?:\.js)?['"]/;
+const GENERATED_CLASS = /@(?:ObjectType|InputType|ArgsType)\(/;
+const REGISTER_CALL = /^\s*registerType\('(?<name>\w+)',\s*\k<name>\);?\s*$/m;
+
+/**
+ * Whether a file is a class file written by the 1.x generator: a decorated
+ * class that imports the registry and ends by registering itself.
+ */
+function isRegistryConsumer(text: string): boolean {
+  return (
+    REGISTRY_IMPORT.test(text) && GENERATED_CLASS.test(text) && REGISTER_CALL.test(text)
+  );
+}
+
+/**
+ * Deletes 1.x class files that this run did not regenerate. Without
+ * `purgeOutput`, files for a model that was since removed or renamed (or for
+ * types an option no longer emits) stay in the output directory. They import
+ * the deleted type registry, and the barrels would re-export them, so one
+ * orphan breaks the whole build. Every file regenerated in this run no longer
+ * imports the registry, so anything that still does is an orphan.
+ */
+export function removeOrphanedRegistryConsumers(
+  args: Pick<EventArguments, 'config' | 'output' | 'project'>,
+  log: LogFunction = defaultLog,
+): string[] {
+  const { config, output, project } = args;
+  if (!config.esmCompatible) {
+    return [];
+  }
+
+  const removed: string[] = [];
+  for (const sourceFile of project.getSourceFiles(`${output}/**/*.ts`)) {
+    if (!isRegistryConsumer(sourceFile.getFullText())) {
+      continue;
+    }
+
+    const filePath = sourceFile.getFilePath();
+    project.removeSourceFile(sourceFile);
+    // Also remove the emitCompiled forms next to it
+    const basePath = filePath.replace(/\.ts$/, '');
+    for (const extension of STALE_EXTENSIONS) {
+      rmSync(`${basePath}${extension}`, { force: true });
+    }
+    removed.push(filePath);
+    log(`nestjs-prisma-graphql: deleted orphaned 1.x file ${filePath}`);
+  }
+
+  if (removed.length > 0) {
+    log(
+      `nestjs-prisma-graphql: deleted ${String(removed.length)} file(s) left by a 1.x generate that still imported the removed type registry. Set purgeOutput = true to keep the output directory clean.`,
+    );
   }
 
   return removed;
