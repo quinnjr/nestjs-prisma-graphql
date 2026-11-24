@@ -17,7 +17,11 @@ import { getPropertyType } from '../helpers/get-property-type.js';
 import { getWhereUniqueAtLeastKeys } from '../helpers/get-where-unique-at-least-keys.js';
 import { ImportDeclarationMap } from '../helpers/import-declaration-map.js';
 import { isWhereUniqueInputType } from '../helpers/is-where-unique-input-type.js';
-import { addLazyTypeImport, wrapLazyPropertyType } from '../helpers/lazy-type.js';
+import {
+  createLazyTypeAlias,
+  withExplicitTypeName,
+  wrapLazyPropertyType,
+} from '../helpers/lazy-type.js';
 import { propertyStructure } from '../helpers/property-structure.js';
 import { relativePath } from '../helpers/relative-path.js';
 import { ok } from '../helpers/type-safe-assert.js';
@@ -55,7 +59,11 @@ export function inputType(
   const classStructure: ClassDeclarationStructure = {
     decorators: [
       {
-        arguments: [],
+        // @ArgsType() takes no name; @InputType() gets an explicit one
+        arguments:
+          classDecoratorName === 'InputType'
+            ? withExplicitTypeName([], inputTypeArg.name)
+            : [],
         name: classDecoratorName,
       },
     ],
@@ -69,8 +77,8 @@ export function inputType(
   const modelFieldSettings = model && fieldSettings.get(model.name);
   const moduleSpecifier = '@nestjs/graphql';
 
-  // Track types that need lazy loading due to circular dependencies
-  const lazyTypes = new Set<string>();
+  // Whether any property is typed through the file-local __Lazy alias
+  let usesLazyType = false;
 
   importDeclarations
     .set('Field', {
@@ -81,21 +89,6 @@ export function inputType(
       moduleSpecifier,
       namedImports: [{ name: classDecoratorName }],
     });
-
-  // Add type registry imports if ESM compatible mode is enabled
-  let typeRegistryPath = '';
-  if (config.esmCompatible) {
-    typeRegistryPath = relativePath(
-      sourceFile.getFilePath(),
-      `${output}/type-registry.ts`,
-    );
-    // Add .js extension for ESM module resolution
-    if (!typeRegistryPath.endsWith('.js')) {
-      typeRegistryPath += '.js';
-    }
-    importDeclarations.add('registerType', typeRegistryPath);
-    importDeclarations.add('getType', typeRegistryPath);
-  }
 
   const useInputType = config.useInputType.find(x =>
     inputTypeArg.name.includes(x.typeName),
@@ -169,7 +162,7 @@ export function inputType(
 
     // Get graphql type
     let graphqlType: string;
-    let useGetType = false;
+    let useLazyType = false;
     const shouldHideField =
       settings?.shouldHideField({
         input: true,
@@ -203,43 +196,32 @@ export function inputType(
 
       graphqlType = graphqlImport.name;
 
-      // In ESM mode, always use getType() for input object types
-      const shouldUseLazyType = config.esmCompatible && location === 'inputObjectTypes';
+      // In ESM mode, input object types reference each other in cycles. The class is
+      // imported normally (the @Field thunk reads it after loading), and the property
+      // type goes through __Lazy so decorator metadata does not read it eagerly.
+      useLazyType = config.esmCompatible && location === 'inputObjectTypes';
 
-      // Handle self-references
-      if (graphqlImport.name === inputTypeArg.name && shouldUseLazyType) {
-        lazyTypes.add(graphqlImport.name);
-        useGetType = true;
-      } else if (
+      if (
         graphqlImport.specifier !== null &&
         graphqlImport.specifier !== undefined &&
         !importDeclarations.has(graphqlImport.name) &&
         graphqlImport.name !== inputTypeArg.name
       ) {
-        if (shouldUseLazyType) {
-          importDeclarations.addType(graphqlImport.name, graphqlImport.specifier);
-          lazyTypes.add(graphqlImport.name);
-        } else {
-          importDeclarations.set(graphqlImport.name, {
-            moduleSpecifier: graphqlImport.specifier,
-            namedImports: [{ name: graphqlImport.name }],
-          });
-        }
-      }
-
-      // Check if this type should use lazy loading
-      if (lazyTypes.has(graphqlImport.name)) {
-        useGetType = true;
+        importDeclarations.set(graphqlImport.name, {
+          moduleSpecifier: graphqlImport.specifier,
+          namedImports: [{ name: graphqlImport.name }],
+        });
       }
     }
 
-    if (useGetType) {
-      addLazyTypeImport(importDeclarations, typeRegistryPath);
-      property.type = propertyStructure({
-        isList,
-        name,
-        propertyType: wrapLazyPropertyType(propertyType, graphqlType),
-      }).type;
+    if (useLazyType) {
+      // Only declare the alias when something is wrapped: a where-unique field is typed
+      // Prisma.AtLeast<...>, and an unused alias fails under noUnusedLocals
+      const wrapped = wrapLazyPropertyType(propertyType, graphqlType);
+      if (wrapped.some((wrappedType, index) => wrappedType !== propertyType[index])) {
+        usesLazyType = true;
+        property.type = propertyStructure({ isList, name, propertyType: wrapped }).type;
+      }
     }
 
     ok(
@@ -251,14 +233,7 @@ export function inputType(
       importDeclarations.add('HideField', moduleSpecifier);
       property.decorators.push({ arguments: [], name: 'HideField' });
     } else {
-      let typeExpression: string;
-      if (useGetType) {
-        typeExpression = isList
-          ? `() => [getType('${graphqlType}')]`
-          : `() => getType('${graphqlType}')`;
-      } else {
-        typeExpression = isList ? `() => [${graphqlType}]` : `() => ${graphqlType}`;
-      }
+      const typeExpression = isList ? `() => [${graphqlType}]` : `() => ${graphqlType}`;
 
       property.decorators.push({
         arguments: [
@@ -324,7 +299,7 @@ export function inputType(
       ) {
         importDeclarations.add('Type', 'class-transformer');
         property.decorators.push({
-          arguments: [classTransformerTypeArgument(graphqlType, useGetType)],
+          arguments: [classTransformerTypeArgument(graphqlType)],
           name: 'Type',
         });
       }
@@ -369,13 +344,9 @@ export function inputType(
   // Build statements array
   const statements: Array<StatementStructures | string> = [
     ...importDeclarations.toStatements(),
+    ...(usesLazyType ? [createLazyTypeAlias()] : []),
     classStructure,
   ];
-
-  // Add registerType call if ESM compatible mode is enabled
-  if (config.esmCompatible) {
-    statements.push(`\nregisterType('${inputTypeArg.name}', ${inputTypeArg.name});`);
-  }
 
   sourceFile.set({
     statements,

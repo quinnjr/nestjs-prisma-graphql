@@ -12,10 +12,6 @@ export function getReservedRootFiles(
   config: Pick<GeneratorConfiguration, 'emitSingle' | 'esmCompatible' | 'reExport'>,
 ): ReadonlySet<string> {
   const reserved = new Set(['decimal-helpers.ts']);
-  if (config.esmCompatible) {
-    reserved.add('type-registry.ts');
-    reserved.add('register-all-types.ts');
-  }
   if (
     config.emitSingle ||
     config.reExport === ReExport.Single ||

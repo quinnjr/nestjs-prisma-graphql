@@ -55,41 +55,46 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           </div>
         </section>
 
+        <!-- Migrating to 2.0 -->
+        <section class="mb-12">
+          <h2 class="text-2xl font-bold text-white mb-6">Migrating to 2.0</h2>
+          <div class="mb-4 p-4 rounded-lg bg-forge-500/10 border border-forge-500/20">
+            <p class="text-sm text-forge-300">
+              <strong>Breaking change:</strong> the ESM type registry has been removed.
+              <code>type-registry.ts</code> and <code>register-all-types.ts</code> are no longer
+              generated, and <code>registerType()</code> / <code>getType()</code> no longer exist.
+              The generator prints a notice on every run and deletes those files if an older
+              version left them in your output directory, along with 1.x class files that are no
+              longer generated and still import the registry.
+            </p>
+          </div>
+          <p class="text-steel-300 mb-4">
+            Remove the registry import from your entry point, and replace any
+            <code>getType('X')</code> in your own code with the class itself. Delete any other
+            registry calls (<code>registerType</code>, <code>forwardRef</code>,
+            <code>lazyType</code>, <code>validateRegistry</code>, and so on). If you imported
+            <code>__Lazy</code> from <code>type-registry.js</code>, declare it locally:
+            <code>type __Lazy&lt;T&gt; = T;</code>
+          </p>
+          <app-code-block [code]="migrationExample" language="typescript" filename="main.ts" />
+        </section>
+
         <!-- Solution -->
         <section class="mb-12">
           <h2 class="text-2xl font-bold text-white mb-6">The Solution: esmCompatible</h2>
           <p class="text-steel-300 mb-4">
-            Enable the <code>esmCompatible</code> option to generate code that handles circular dependencies:
+            Enable the <code>esmCompatible</code> option to generate code that is safe to load in
+            any order:
           </p>
           <app-code-block [code]="esmConfig" language="graphql" filename="schema.prisma" />
 
-          <h3 class="text-lg font-semibold text-white mt-6 mb-3">What Gets Generated</h3>
-          <div class="space-y-4">
-            <div class="p-4 rounded-lg glass">
-              <code class="text-brand-400">type-registry.ts</code>
-              <p class="text-sm text-steel-400 mt-1">
-                Central registry for lazy type resolution. Types are registered at module load time
-                and resolved at runtime.
-              </p>
-            </div>
-            <div class="p-4 rounded-lg glass">
-              <code class="text-brand-400">register-all-types.ts</code>
-              <p class="text-sm text-steel-400 mt-1">
-                Import this early in your application to ensure all types are registered before use.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <!-- Type Registry -->
-        <section class="mb-12">
-          <h2 class="text-2xl font-bold text-white mb-6">Using the Type Registry</h2>
+          <h3 class="text-lg font-semibold text-white mt-6 mb-3">How It Works</h3>
           <p class="text-steel-300 mb-4">
-            The type registry provides a <code>getType()</code> function for runtime type resolution:
+            A cycle only breaks ESM when a class is read while its module is still loading.
+            Generated code avoids every such read: field types are functions, and cyclic
+            properties are typed through a local <code>__Lazy&lt;T&gt;</code> alias so decorator
+            metadata records <code>Object</code> instead of reading the class.
           </p>
-          <app-code-block [code]="registryExample" language="typescript" filename="type-registry.ts" />
-
-          <h3 class="text-lg font-semibold text-white mt-6 mb-3">In Generated Models</h3>
           <app-code-block [code]="modelExample" language="typescript" filename="user.model.ts" />
         </section>
 
@@ -97,14 +102,15 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
         <section class="mb-12">
           <h2 class="text-2xl font-bold text-white mb-6">Application Setup</h2>
           <p class="text-steel-300 mb-4">
-            Import the type registry early in your application's entry point:
+            There is nothing to set up. No registry, and no file that must be imported first:
           </p>
           <app-code-block [code]="mainSetup" language="typescript" filename="main.ts" />
 
           <div class="mt-4 p-4 rounded-lg bg-brand-500/10 border border-brand-500/20">
             <p class="text-sm text-brand-300">
-              <strong>Important:</strong> The <code>register-all-types</code> import must come
-              before any code that uses the generated types.
+              <strong>Bundlers:</strong> generated classes pass their GraphQL name explicitly
+              (<code>&#64;ObjectType('User')</code>), so bundled and minified builds produce the
+              same schema even though bundlers rename classes.
             </p>
           </div>
         </section>
@@ -128,12 +134,24 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
             <div class="p-5 rounded-xl glass">
               <h3 class="font-semibold text-white mb-2 flex items-center gap-2">
                 <span class="text-forge-400">⚠️</span>
-                Type is undefined at runtime
+                Cannot find module register-all-types
               </h3>
               <p class="text-steel-400 text-sm mb-3">
-                Ensure you're importing <code>register-all-types</code> before using any generated types.
+                The type registry was removed in 2.0. Delete the import; nothing replaces it.
               </p>
               <app-code-block [code]="registerImportFix" language="typescript" />
+            </div>
+
+            <div class="p-5 rounded-xl glass">
+              <h3 class="font-semibold text-white mb-2 flex items-center gap-2">
+                <span class="text-forge-400">⚠️</span>
+                Cannot access 'X' before initialization
+              </h3>
+              <p class="text-steel-400 text-sm mb-3">
+                Generated code no longer causes this. Look for a hand-written class in a cycle
+                whose property is typed as another class, and type it through
+                <code>__Lazy&lt;T&gt;</code> the same way.
+              </p>
             </div>
 
             <div class="p-5 rounded-xl glass">
@@ -170,7 +188,7 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
             <p class="text-sm text-steel-300">
               <strong>Note:</strong> The generator still produces valid TypeScript. CommonJS bundlers
               and transpilers will handle the output correctly. The <code>esmCompatible</code> option
-              only affects how circular dependencies are handled.
+              adds <code>.js</code> import extensions, barrel files and cycle-safe property types.
             </p>
           </div>
         </section>
@@ -216,44 +234,35 @@ model Post {
   esmConfig = `generator nestgraphql {
   provider      = "nestjs-prisma-graphql"
   output        = "../src/@generated"
-  esmCompatible = true  // Enable ESM circular dependency handling
-}`;
-
-  registryExample = `// Auto-generated type registry
-const typeRegistry = new Map<string, () => unknown>();
-
-export function registerType(name: string, typeFactory: () => unknown): void {
-  typeRegistry.set(name, typeFactory);
-}
-
-export function getType<T>(name: string): T {
-  const factory = typeRegistry.get(name);
-  if (!factory) {
-    throw new Error(\`Type "\${name}" not registered\`);
-  }
-  return factory() as T;
+  esmCompatible = true  // .js import extensions, barrels, cycle-safe property types
 }`;
 
   modelExample = `import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { getType } from './type-registry.js';
+import { Post } from '../post/post.model.js';
 
-@ObjectType()
+/** Identity alias: keeps decorator metadata from reading a class during an ESM import cycle. */
+type __Lazy<T> = T;
+
+@ObjectType('User')
 export class User {
   @Field(() => ID)
   id!: string;
 
-  // Instead of direct import, use getType for circular refs
-  @Field(() => [getType<typeof Post>('Post')])
-  posts?: Post[];
-}
+  // The field type is a function, so Post is only read when the schema is built
+  @Field(() => [Post])
+  posts?: Array<__Lazy<Post>>;
+}`;
 
-// Register this type
-import { registerType } from './type-registry.js';
-registerType('User', () => User);`;
+  migrationExample = `- import './${'@'}generated/register-all-types.js';
+  import 'reflect-metadata';
+  import { NestFactory } from '@nestjs/core';
 
-  mainSetup = `// Import type registry FIRST - before any generated types
-import './${'@'}generated/register-all-types.js';
+- import { getType } from './${'@'}generated/type-registry.js';
+- @Field(() => getType('Post'))
++ import { Post } from './${'@'}generated/post/post.model.js';
++ @Field(() => Post)`;
 
+  mainSetup = `import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 
@@ -264,7 +273,7 @@ async function bootstrap() {
 
 bootstrap();`;
 
-  registerImportFix = `import './${'@'}generated/register-all-types.js';`;
+  registerImportFix = `- import './${'@'}generated/register-all-types.js';`;
 
   packageJson = `{
   "name": "my-nestjs-app",

@@ -26,20 +26,6 @@ export class ImportDeclarationMap extends Map<
     }
   }
 
-  /**
-   * Add a type-only import for ESM circular dependency resolution
-   */
-  public addType(name: string, moduleSpecifier: string): void {
-    const typeOnlyKey = `type:${name}`;
-    if (!this.has(typeOnlyKey) && !this.has(name)) {
-      this.set(typeOnlyKey, {
-        isTypeOnly: true,
-        moduleSpecifier,
-        namedImports: [{ name }],
-      });
-    }
-  }
-
   public create(args: {
     name: string;
     from: string;

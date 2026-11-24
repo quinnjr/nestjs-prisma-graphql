@@ -190,7 +190,7 @@ export class ConfigurationComponent {
   coreOptions = [
     { name: 'output', type: 'string', default: '-', description: 'Output folder relative to schema file' },
     { name: 'outputFilePattern', type: 'string', default: '{model}/{name}.{type}.ts', description: 'File path pattern for generated files' },
-    { name: 'esmCompatible', type: 'boolean', default: 'true', description: 'Enable ESM circular import resolution' },
+    { name: 'esmCompatible', type: 'boolean', default: 'false', description: 'ESM output: .js import extensions, barrel files, and cycle-safe property types' },
     { name: 'prismaClientImport', type: 'string', default: '@prisma/client', description: 'Path to Prisma Client import' },
     { name: 'tsConfigFilePath', type: 'string', default: '-', description: 'Path to tsconfig.json for type checking' },
     { name: 'disabled', type: 'boolean', default: 'false', description: 'Disable code generation (accepts: true, "1", "yes")' },

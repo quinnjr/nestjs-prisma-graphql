@@ -3,7 +3,7 @@ import type { EventArguments } from '../types.js';
 
 /**
  * Post-process generated files to add .js extensions to relative imports
- * and convert type-only imports to regular imports for ESM compatibility.
+ * for ESM compatibility.
  *
  * This must run after all files are generated but before they're saved,
  * to avoid the stack overflow that occurs when ts-morph tries to resolve
@@ -38,25 +38,15 @@ export function postProcessImports(args: EventArguments): void {
       },
     );
 
-    // Convert type-only imports to regular imports
-    // This fixes the circular dependency issue where getType() fails
-    const withRegularImports = withExtensions.replace(
-      /import\s+type\s+(\{[^}]+\})\s+from\s+['"]([^'"]+)['"]/g,
-      (_match: string, imports: string, importPath: string) => {
-        modified = true;
-        return `import ${imports} from '${importPath}'`;
-      },
-    );
-
     if (modified) {
-      sourceFile.replaceWithText(withRegularImports);
+      sourceFile.replaceWithText(withExtensions);
       modifiedCount++;
     }
   }
 
   if (modifiedCount > 0) {
     console.log(
-      `nestjs-prisma-graphql: added .js extensions and converted type imports in ${modifiedCount} files`,
+      `nestjs-prisma-graphql: added .js extensions to imports in ${modifiedCount} files`,
     );
   }
 }
