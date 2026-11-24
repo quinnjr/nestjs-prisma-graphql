@@ -192,7 +192,11 @@ export async function generate(
 
   events = [
     { name: 'Begin', description: 'Generation started, schema parsed' },
-    { name: 'BeforeGenerateFiles', description: 'Before writing any files' },
+    {
+      name: 'BeforeGenerateFiles',
+      description:
+        'Before writing any files. With esmCompatible it runs before ESM post-processing: barrels, .js import extensions and register-all-types are added afterwards, including for files a listener creates',
+    },
     { name: 'BeforeInputType', description: 'Before generating an input type' },
     { name: 'BeforeOutputType', description: 'Before generating an output type' },
     { name: 'BeforeModel', description: 'Before generating a model class' },

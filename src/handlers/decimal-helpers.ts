@@ -27,7 +27,7 @@ export function generateDecimalHelpers(args: EventArguments): void {
  * which is incompatible with Prisma 7's new client structure.
  */
 
-import Decimal from 'decimal.js';
+import { Decimal } from 'decimal.js';
 
 /**
  * Reconstruct a Decimal from a serialized object.

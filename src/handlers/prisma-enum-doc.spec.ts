@@ -158,4 +158,35 @@ describe('extractEnumValueDocs', () => {
       expect(result.MULTI).toEqual({ description: 'Line 1\nLine 2\nLine 3' });
     });
   });
+
+  describe('description and deprecation together', () => {
+    it('should keep description when @deprecated follows it', () => {
+      const values = [{ documentation: 'Old role\n@deprecated Use ADMIN', name: 'OLD' }];
+
+      expect(extractEnumValueDocs(values).OLD).toEqual({
+        deprecationReason: 'Use ADMIN',
+        description: 'Old role',
+      });
+    });
+
+    it('should keep description when @deprecated precedes it', () => {
+      const values = [{ documentation: '@deprecated Use ADMIN\nOld role', name: 'OLD' }];
+
+      expect(extractEnumValueDocs(values).OLD).toEqual({
+        deprecationReason: 'Use ADMIN',
+        description: 'Old role',
+      });
+    });
+
+    it('should preserve blank lines inside the description', () => {
+      const values = [
+        { documentation: 'Para 1\n\nPara 2\n@deprecated Gone', name: 'OLD' },
+      ];
+
+      expect(extractEnumValueDocs(values).OLD).toEqual({
+        deprecationReason: 'Gone',
+        description: 'Para 1\n\nPara 2',
+      });
+    });
+  });
 });

@@ -48,10 +48,10 @@ export function getGraphqlImport(args: {
         return { name: 'Boolean', specifier: undefined };
       }
       case 'Decimal': {
-        // Use graphql-scalars by default for Prisma 7+ compatibility
+        // graphql-scalars has no GraphQLDecimal; prisma-graphql-type-decimal@4 supports Prisma 7
         return {
           name: 'GraphQLDecimal',
-          specifier: 'graphql-scalars',
+          specifier: 'prisma-graphql-type-decimal',
         };
       }
       case 'Json': {

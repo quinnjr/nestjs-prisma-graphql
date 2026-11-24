@@ -1,7 +1,12 @@
 import type { EventArguments, SchemaEnum } from '../types.js';
 
+import JSON5 from 'json5';
 import { type EnumDeclarationStructure, StructureKind } from 'ts-morph';
 
+import {
+  assertNoEnumLevelEnumValue,
+  getEnumMembers,
+} from '../helpers/enum-value-settings.js';
 import { ImportDeclarationMap } from '../helpers/import-declaration-map.js';
 import { extractEnumValueDocs } from './prisma-enum-doc.js';
 
@@ -19,10 +24,19 @@ export function registerEnum(enumType: SchemaEnum, args: EventArguments): void {
   }
 
   const dataModelEnum = enumValue;
-  const enumTypesData = (dataModelEnum?.values ?? []).map(v => ({
-    name: v.name,
-    documentation: undefined as string | undefined,
-  }));
+
+  // Type-safe extraction of enum values
+  // Access the values property through unknown to avoid unsafe member access
+  const enumTypeRecord = enumType as Record<string, unknown>;
+  const rawValues: unknown = enumTypeRecord.values;
+  const enumValues: string[] = Array.isArray(rawValues)
+    ? (rawValues as unknown[]).map((v: unknown) => String(v))
+    : [];
+
+  // Resolve member values (honouring `/// @EnumValue(...)` directives)
+  assertNoEnumLevelEnumValue(enumName, dataModelEnum?.documentation);
+  const enumMembers = getEnumMembers(enumName, enumValues, dataModelEnum);
+
   const sourceFile = getSourceFile({
     name: enumName,
     type: 'enum',
@@ -36,7 +50,7 @@ export function registerEnum(enumType: SchemaEnum, args: EventArguments): void {
   });
 
   // Extract valuesMap from enum documentation
-  const valuesMap = extractEnumValueDocs(enumTypesData);
+  const valuesMap = extractEnumValueDocs(enumMembers);
 
   // Remove entries with no description or deprecationReason
   const filteredValuesMap = Object.fromEntries(
@@ -46,24 +60,16 @@ export function registerEnum(enumType: SchemaEnum, args: EventArguments): void {
   // Format only if needed
   const hasValuesMap = Object.keys(filteredValuesMap).length > 0;
   const formattedValuesMap = hasValuesMap
-    ? JSON.stringify(filteredValuesMap, null, 2).replace(/"([^"]+)":/g, '$1:')
+    ? JSON5.stringify(filteredValuesMap, null, 2)
     : '';
   const valuesMapEntry = hasValuesMap ? `, valuesMap: ${formattedValuesMap}` : '';
-
-  // Type-safe extraction of enum values
-  // Access the values property through unknown to avoid unsafe member access
-  const enumTypeRecord = enumType as Record<string, unknown>;
-  const rawValues: unknown = enumTypeRecord.values;
-  const enumValues: string[] = Array.isArray(rawValues)
-    ? (rawValues as unknown[]).map((v: unknown) => String(v))
-    : [];
 
   const enumStructure: EnumDeclarationStructure = {
     isExported: true,
     kind: StructureKind.Enum,
-    members: enumValues.map((v: string) => ({
-      initializer: JSON.stringify(v),
-      name: v,
+    members: enumMembers.map(({ name, value }) => ({
+      initializer: JSON.stringify(value),
+      name,
     })),
     name: enumName,
   };

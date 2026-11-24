@@ -113,6 +113,27 @@ import { CodeBlockComponent } from '../../components/code-block/code-block.compo
           </div>
         </section>
 
+        <!-- Enum Values -->
+        <section class="mb-12">
+          <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+            <code class="text-brand-400">&#64;EnumValue()</code>
+          </h2>
+          <p class="text-steel-300 mb-4">
+            Assign a custom string or number to a generated TypeScript enum member. Members without
+            the directive keep their name as a string value. Values must be unique within an enum.
+            The GraphQL schema still exposes the member names.
+          </p>
+          <app-code-block [code]="enumValueExample" language="graphql" />
+
+          <h3 class="text-lg font-semibold text-white mt-6 mb-3">Generated Output</h3>
+          <app-code-block [code]="enumValueOutput" language="typescript" />
+
+          <p class="text-steel-300 mt-4">
+            Prisma Client still uses member names (<code>'ADMIN'</code>, <code>'LOW'</code>), so
+            convert between Prisma values and the generated enum in your resolvers or services.
+          </p>
+        </section>
+
         <!-- Documentation Comments -->
         <section class="mb-12">
           <h2 class="text-2xl font-bold text-white mb-4">Documentation Comments</h2>
@@ -254,6 +275,29 @@ model User {
   /// @Validator.MinLength(2)
   /// @Validator.MaxLength(100)
   name String
+}`;
+
+  enumValueExample = `enum Role {
+  /// @EnumValue("administrator")
+  ADMIN
+  USER
+}
+
+enum Priority {
+  /// @EnumValue(1)
+  LOW
+  /// @EnumValue(2)
+  HIGH
+}`;
+
+  enumValueOutput = `export enum Role {
+    ADMIN = "administrator",
+    USER = "USER"
+}
+
+export enum Priority {
+    LOW = 1,
+    HIGH = 2
 }`;
 
   docCommentExample = `model User {

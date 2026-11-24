@@ -17,6 +17,7 @@ import { getPropertyType } from '../helpers/get-property-type.js';
 import { getWhereUniqueAtLeastKeys } from '../helpers/get-where-unique-at-least-keys.js';
 import { ImportDeclarationMap } from '../helpers/import-declaration-map.js';
 import { isWhereUniqueInputType } from '../helpers/is-where-unique-input-type.js';
+import { addLazyTypeImport, wrapLazyPropertyType } from '../helpers/lazy-type.js';
 import { propertyStructure } from '../helpers/property-structure.js';
 import { relativePath } from '../helpers/relative-path.js';
 import { ok } from '../helpers/type-safe-assert.js';
@@ -82,8 +83,9 @@ export function inputType(
     });
 
   // Add type registry imports if ESM compatible mode is enabled
+  let typeRegistryPath = '';
   if (config.esmCompatible) {
-    let typeRegistryPath = relativePath(
+    typeRegistryPath = relativePath(
       sourceFile.getFilePath(),
       `${output}/type-registry.ts`,
     );
@@ -123,15 +125,17 @@ export function inputType(
     const modelField = model?.fields.find(f => f.name === name);
     const isCustomsApplicable = typeName === modelField?.type;
     const atLeastKeys = model && getWhereUniqueAtLeastKeys(model);
+    // Must be undefined (not false) when not applicable so `??` below falls through
     const whereUniqueInputTypeValue =
-      isWhereUniqueInputType(typeName) &&
-      atLeastKeys &&
-      `Prisma.AtLeast<${typeName}, ${atLeastKeys.map(n => `'${n}'`).join(' | ')}>`;
+      isWhereUniqueInputType(typeName) && atLeastKeys !== undefined
+        ? `Prisma.AtLeast<${typeName}, ${atLeastKeys.map(n => `'${n}'`).join(' | ')}>`
+        : undefined;
 
     const propertyType = castArray(
       propertySettings?.name ??
         whereUniqueInputTypeValue ??
         getPropertyType({
+          customValueEnums: args.customValueEnums,
           location,
           type: typeName,
         }),
@@ -227,6 +231,15 @@ export function inputType(
       if (lazyTypes.has(graphqlImport.name)) {
         useGetType = true;
       }
+    }
+
+    if (useGetType) {
+      addLazyTypeImport(importDeclarations, typeRegistryPath);
+      property.type = propertyStructure({
+        isList,
+        name,
+        propertyType: wrapLazyPropertyType(propertyType, graphqlType),
+      }).type;
     }
 
     ok(

@@ -151,6 +151,13 @@ export function validateRegistry(expectedTypes: string[]): void {
     );
   }
 }
+
+/**
+ * Identity alias for property types resolved lazily via getType().
+ * Being a type alias, it makes emitDecoratorMetadata record \`Object\` instead of
+ * reading the class while it may still be uninitialized in an ESM import cycle.
+ */
+export type __Lazy<T> = T;
 `;
 
   sourceFile.addStatements(registryCode);
