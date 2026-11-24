@@ -247,6 +247,42 @@ export class User {
       expect(existsSync(file('gone/gone.model.ts'))).toBe(true);
     });
 
+    it('does not warn about a 1.x emitSingle index.ts, which is rebuilt in the same run', () => {
+      const project = createTestProject();
+      const single = `import { registerType, getType } from './type-registry.js';
+
+@ObjectType()
+export class User {
+  @Field(() => [getType('Post')])
+  posts?: unknown[];
+}
+
+@ObjectType()
+export class Post {
+  @Field(() => getType('User'))
+  author?: unknown;
+}
+
+registerType('User', User);
+registerType('Post', Post);
+`;
+      onDisk(project, 'index.ts', single);
+      const config: Partial<GeneratorConfiguration> = {
+        emitSingle: true,
+        esmCompatible: true,
+      };
+
+      const result = removeOrphanedRegistryConsumers(
+        { config: config as GeneratorConfiguration, output, project },
+        log,
+      );
+
+      expect(result).toEqual({ removed: [], skipped: [] });
+      expect(logs).toEqual([]);
+      // Still in the project so generateFiles can rewrite it
+      expect(project.getSourceFiles()).toHaveLength(1);
+    });
+
     it('ignores files that do not use the registry', () => {
       const project = createTestProject();
       project.createSourceFile(file('user/user.model.ts'), REGENERATED);

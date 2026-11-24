@@ -172,8 +172,14 @@ export function removeOrphanedRegistryConsumers(
     return { removed, skipped };
   }
 
+  // With emitSingle, a 1.x index.ts holds every class and is rebuilt later in this run
+  const singleIndexPath = config.emitSingle ? path.join(output, 'index.ts') : undefined;
+
   for (const sourceFile of project.getSourceFiles(`${output}/**/*.ts`)) {
-    if (!usesTypeRegistry(sourceFile.getFullText())) {
+    if (
+      sourceFile.getFilePath() === singleIndexPath ||
+      !usesTypeRegistry(sourceFile.getFullText())
+    ) {
       continue;
     }
 
