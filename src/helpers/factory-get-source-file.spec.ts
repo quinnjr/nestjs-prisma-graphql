@@ -22,12 +22,10 @@ function createGetSourceFile(
 }
 
 describe('getReservedRootFiles', () => {
-  it('reserves the ESM helpers and root barrel in esmCompatible mode', () => {
+  it('reserves the decimal helpers and root barrel in esmCompatible mode', () => {
     expect([...getReservedRootFiles(esmConfig)].sort()).toEqual([
       'decimal-helpers.ts',
       'index.ts',
-      'register-all-types.ts',
-      'type-registry.ts',
     ]);
   });
 
@@ -60,7 +58,7 @@ describe('factoryGetSourceFile', () => {
     );
   });
 
-  it.each(['TypeRegistry', 'RegisterAllTypes', 'DecimalHelpers', 'Index'])(
+  it.each(['DecimalHelpers', 'Index'])(
     'rejects %s overwriting a generated root helper file',
     name => {
       const getSourceFile = createGetSourceFile('{name}.ts');
@@ -69,10 +67,19 @@ describe('factoryGetSourceFile', () => {
     },
   );
 
+  it.each(['TypeRegistry', 'RegisterAllTypes'])(
+    'allows %s at the root now that the type registry is gone',
+    name => {
+      const getSourceFile = createGetSourceFile('{name}.ts');
+
+      expect(() => getSourceFile({ name, type: 'model' })).not.toThrow();
+    },
+  );
+
   it('rejects reserved paths behind a leading ./', () => {
     const getSourceFile = createGetSourceFile('./{name}.ts');
 
-    expect(() => getSourceFile({ name: 'TypeRegistry', type: 'model' })).toThrow(
+    expect(() => getSourceFile({ name: 'DecimalHelpers', type: 'model' })).toThrow(
       /reserved/,
     );
   });

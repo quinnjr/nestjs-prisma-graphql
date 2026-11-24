@@ -130,7 +130,10 @@ function getNamespaceExportDeclaration(
   directory: Directory,
   sourceDirectory: Directory,
 ): ExportDeclarationStructure {
-  let moduleSpecifier = directory.getRelativePathAsModuleSpecifierTo(sourceDirectory);
+  // ts-morph resolves a directory to its index module (`./args/index`)
+  let moduleSpecifier = directory
+    .getRelativePathAsModuleSpecifierTo(sourceDirectory)
+    .replace(/\/index$/, '');
   if (!moduleSpecifier.endsWith('/index.js')) {
     moduleSpecifier += '/index.js';
   }

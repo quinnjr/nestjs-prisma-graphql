@@ -38,33 +38,6 @@ describe('ImportDeclarationMap', () => {
     });
   });
 
-  describe('addType method', () => {
-    it('should add type-only import with type: prefix', () => {
-      const map = new ImportDeclarationMap();
-      map.addType('User', './user.model');
-
-      expect(map.has('type:User')).toBe(true);
-      expect(map.get('type:User')?.isTypeOnly).toBe(true);
-    });
-
-    it('should not add if regular import already exists', () => {
-      const map = new ImportDeclarationMap();
-      map.add('User', './user.model');
-      map.addType('User', './user.model');
-
-      expect(map.has('type:User')).toBe(false);
-      expect(map.has('User')).toBe(true);
-    });
-
-    it('should not add if type import already exists', () => {
-      const map = new ImportDeclarationMap();
-      map.addType('User', './user.model');
-      map.addType('User', './another.model');
-
-      expect(map.get('type:User')?.moduleSpecifier).toBe('./user.model');
-    });
-  });
-
   describe('create method', () => {
     it('should create named import', () => {
       const map = new ImportDeclarationMap();

@@ -195,7 +195,7 @@ export async function generate(
     {
       name: 'BeforeGenerateFiles',
       description:
-        'Before writing any files. With esmCompatible it runs before ESM post-processing: barrels, .js import extensions and register-all-types are added afterwards, including for files a listener creates',
+        'Before writing any files. With esmCompatible it runs before ESM post-processing: barrels and .js import extensions are added afterwards, including for files a listener creates',
     },
     { name: 'BeforeInputType', description: 'Before generating an input type' },
     { name: 'BeforeOutputType', description: 'Before generating an output type' },

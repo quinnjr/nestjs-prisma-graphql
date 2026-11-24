@@ -40,8 +40,8 @@ Generate object types, inputs, args, enums, and more from your Prisma schema for
   - [Built-in Scalar Mappings](#built-in-scalar-mappings)
   - [Custom Scalar Configuration](#custom-scalar-configuration)
 - [ESM Compatibility](#esm-compatibility)
-  - [Handling Circular Dependencies](#handling-circular-dependencies)
-  - [Type Registry](#type-registry)
+  - [Migrating to 2.0](#migrating-to-20)
+  - [Handling Circular Dependencies](#esm-vs-commonjs-the-circular-dependency-problem)
 - [Integration Examples](#integration-examples)
   - [Express + Apollo (Default)](#express--apollo-default)
   - [Fastify + Mercurius](#fastify--mercurius)
@@ -60,7 +60,7 @@ Generate object types, inputs, args, enums, and more from your Prisma schema for
 
 - 🚀 **ESM-first** — Built with ESM as the primary module format using `lodash-es` and proper `.js` extensions
 - 📦 **Prisma 7+ compatible** — Full support for latest Prisma versions and features
-- 🔄 **Circular dependency handling** — Built-in support for ESM circular import resolution with type registry
+- 🔄 **Circular dependency handling** — Generated types load in any order under ESM, with no registry or setup import
 - 🏗️ **NestJS GraphQL ready** — Generates ready-to-use `@nestjs/graphql` decorators and types
 - ⚡ **TypeScript 5.x** — Full support for latest TypeScript features with `NodeNext` module resolution
 - ✅ **class-validator integration** — First-class support for validation decorators
@@ -200,7 +200,7 @@ export class UserResolver {
 | ----------------------- | --------- | -------------------------- | -------------------------------------------------------------------------------------- |
 | `output`                | `string`  | _required_                 | Output folder relative to the schema file                                              |
 | `outputFilePattern`     | `string`  | `{model}/{name}.{type}.ts` | Pattern for generated file paths                                                       |
-| `esmCompatible`         | `boolean` | `true`                     | Enable ESM circular import resolution with type registry                               |
+| `esmCompatible`         | `boolean` | `false`                    | ESM output: `.js` import extensions, barrel files, and cycle-safe property types       |
 | `esmSuppressTypeErrors` | `boolean` | `false`                    | Add `// @ts-nocheck` to generated files (useful for deep relation filename truncation) |
 | `prismaClientImport`    | `string`  | `@prisma/client`           | Custom path to Prisma Client                                                           |
 | `tsConfigFilePath`      | `string`  | -                          | Path to tsconfig.json for type checking                                                |
@@ -732,31 +732,63 @@ This generator is built from the ground up for ESM (ECMAScript Modules).
 - All imports include `.js` extensions
 - `"type": "module"` in package.json
 - `NodeNext` module resolution
-- Proper `import type` for type-only imports
+
+### Migrating to 2.0
+
+> **Breaking change in 2.0: the ESM type registry has been removed.**
+> `type-registry.ts` and `register-all-types.ts` are no longer generated, and `registerType()` /
+> `getType()` no longer exist. The generator prints a notice about this on every run in
+> `esmCompatible` mode, and deletes those two files if an older version left them in your output
+> directory. It also deletes generated class files from 1.x that are no longer produced (for
+> example for a model you have since removed): without `purgeOutput` they would stay behind,
+> still importing the registry, and break the build. Each deleted file is logged. Only files with
+> the exact shape the generator wrote are deleted. A hand-written file in the output directory that
+> uses the registry is never deleted: the generator prints a warning naming it and leaves it out of
+> that run's index files until you migrate it.
+
+What to change in your application:
+
+1. **Remove the registry import** from your entry point. It will fail to resolve after upgrading:
+
+   ```diff
+   - import './@generated/register-all-types.js';
+     import 'reflect-metadata';
+     import { NestFactory } from '@nestjs/core';
+   ```
+
+2. **Replace `getType('X')` in your own code** with the class itself:
+
+   ```diff
+   - import { getType } from './@generated/type-registry.js';
+   - @Field(() => getType('Post'))
+   + import { Post } from './@generated/post/post.model.js';
+   + @Field(() => Post)
+   ```
+
+3. **Delete every other registry call**: `registerType(...)`, `forwardRef(...)`, `lazyType(...)`,
+   `isTypeRegistered(...)`, `markRegistrationComplete()`, `validateRegistry(...)` and
+   `getRegisteredTypes()`. They have no replacement because nothing needs registering.
+
+4. **If you imported `__Lazy` from `type-registry.js`**, declare it locally instead:
+   `type __Lazy<T> = T;`
+
+5. Regenerate. Nothing has to be imported first any more: import generated types from wherever you
+   need them, in any order.
+
+Generated classes also now carry explicit GraphQL names (`@ObjectType('Post')`,
+`@InputType('PostWhereInput')`). Your schema is unchanged, and it now stays the same when the
+code is bundled or minified.
 
 ### ESM vs CommonJS: The Circular Dependency Problem
 
-In CommonJS, circular dependencies "just work" because modules receive a partial export object that gets filled in as the module executes. In ESM, imports are "live bindings" that reference the actual exported value—which may be `undefined` if the module hasn't finished initializing.
-
-**CommonJS behavior:**
-
-```javascript
-// user.js imports post.js, post.js imports user.js
-// CJS: Both get a partial object that fills in later ✅
-```
-
-**ESM behavior:**
-
-```javascript
-// user.js imports post.js, post.js imports user.js
-// ESM: One of them gets undefined during initialization ❌
-```
-
-This causes bundling errors where CJS would produce valid bundles but ESM complains about broken dependency cycles.
+Generated types reference each other in cycles (`User` → `Post` → `User`). In CommonJS that "just
+works" because a module receives a partial export object that fills in later. In ESM, reading an
+imported class while its module is still loading throws
+`ReferenceError: Cannot access 'X' before initialization`.
 
 ### The Solution: esmCompatible Mode
 
-Enable `esmCompatible` mode to generate code that handles circular dependencies:
+Enable `esmCompatible` mode to generate code that is safe to load in any order:
 
 ```prisma
 generator nestgraphql {
@@ -767,84 +799,38 @@ generator nestgraphql {
 }
 ```
 
-### Type Registry
+When `esmCompatible` is enabled, the generator:
 
-When `esmCompatible` is enabled, the generator automatically handles:
+1. **Adds `.js` extensions** to all relative imports
+2. **Creates barrel exports** (`index.ts` files) when `reExport = "None"`
+3. **Types cyclic properties through `__Lazy<T>`** so nothing reads a class while it is loading
 
-1. **Type Registry** — Creates `type-registry.ts` with lazy type resolution helpers
-2. **Type Registration** — Generates `register-all-types.js` that imports all types
-3. **ESM Import Resolution** — Adds `.js` extensions to all relative imports
-4. **Barrel Exports** — Creates `index.ts` files when `reExport = "None"`
-5. **TypeScript Compatibility** — Patches `getType<T = any>` for `@nestjs/graphql`
-
-**No post-processing scripts needed** — the generator handles everything internally when `esmCompatible = true`.
-
-#### Generated Files
-
-The generator creates:
-
-#### Available Functions
-
-| Function                   | Description                                     |
-| -------------------------- | ----------------------------------------------- |
-| `registerType(name, type)` | Register a type with the registry               |
-| `getType<T>(name)`         | Get a registered type (for `@Field` decorators) |
-| `forwardRef<T>(name)`      | Create a forward reference with error handling  |
-| `lazyType<T>(name)`        | Create a lazy type thunk (safest pattern)       |
-| `isTypeRegistered(name)`   | Check if a type is registered                   |
-| `validateRegistry(types)`  | Validate expected types are registered          |
-
-The registry also exports the type alias `__Lazy<T> = T`. Properties whose GraphQL type resolves
-lazily through `getType()` are typed `__Lazy<X>` (e.g. `every?: __Lazy<PostWhereInput>`). It is
-identical to `X` for type checking, but with `emitDecoratorMetadata` TypeScript records `Object`
-as the design type instead of reading `X` while the class may still be uninitialized in an ESM
-import cycle.
-
-#### Setup
-
-Import the registry **first** in your application bootstrap:
-
-> With `emitSingle = true` there is no `register-all-types.js`: the single `index.js` registers
-> every type itself, so import `./@generated/index.js` first instead. The `type-registry` and
-> `decimal-helpers` modules stay next to it as separate files.
-
-```typescript
-// main.ts - register-all-types MUST be the first import!
-import './@generated/register-all-types.js';
-
-import 'reflect-metadata';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module.js';
-
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  await app.listen(3000);
-}
-
-bootstrap();
-```
+**No setup is needed in your application.** There is no registry and no file that must be imported
+first.
 
 #### How It Works
 
-For circular references, the generator uses lazy type resolution:
+A cycle only breaks ESM when a class is read _during_ module loading. Generated code avoids every
+such read:
 
 ```typescript
-// Instead of direct import (causes circular dependency)
 import { Post } from '../post/post.model.js';
 
-// Uses lazy resolution via type registry
-import { getType } from '../type-registry.js';
-import type { Post } from '../post/post.model.js'; // Type-only import is safe
+/** Identity alias: keeps decorator metadata from reading a class during an ESM import cycle. */
+type __Lazy<T> = T;
 
-@ObjectType()
+@ObjectType('User')
 export class User {
-  @Field(() => getType('Post'), { nullable: true })
-  posts?: Post[];
+  // The field type is a function, so `Post` is only read later, when the schema is built
+  @Field(() => [Post], { nullable: true })
+  // With emitDecoratorMetadata, a property typed `Post` would make TypeScript read the class
+  // right here. `__Lazy<Post>` is the same type, but the metadata records `Object` instead.
+  posts?: Array<__Lazy<Post>>;
 }
-
-// Register this type
-registerType('User', User);
 ```
+
+`__Lazy<T>` is a local, non-exported alias declared in each generated file that uses it. It is
+identical to `T` for type checking.
 
 ### Bundler Compatibility
 
@@ -859,23 +845,22 @@ The ESM-compatible output works with:
 | **tsx/ts-node** | ✅     | With ESM loader              |
 | **Node.js**     | ✅     | v20+ with `"type": "module"` |
 
+Bundlers and minifiers rename classes, and NestJS normally takes a GraphQL type's name from its
+class name. Generated classes pass their name explicitly, so bundled and minified builds produce
+the same schema as unbundled ones.
+
+> Decorator metadata still has to come from your compiler: esbuild alone does not implement
+> `emitDecoratorMetadata`. Compile with `tsc` or SWC first, or use a plugin that does.
+
 ### Debugging Circular Dependencies
 
-If you see errors like "Cannot access 'X' before initialization":
+If you see `Cannot access 'X' before initialization` after upgrading to 2.0, the eager read is in
+your own code, not the generated code. Typical causes:
 
-1. **Check import order**: Ensure `register-all-types.js` is imported first
-2. **Verify registration**: Use `getRegisteredTypes()` to see what's registered
-3. **Validate types**: Use `validateRegistry(['User', 'Post'])` to check expected types
-
-```typescript
-import { getRegisteredTypes, validateRegistry } from './@generated/type-registry.js';
-
-// Debug: see what's registered
-console.log('Registered types:', getRegisteredTypes());
-
-// Validate expected types exist
-validateRegistry(['User', 'Post', 'Comment']);
-```
+1. **A property typed as a class in a hand-written `@ObjectType`/`@InputType`** that is part of a
+   cycle. Wrap it the same way: `author?: __Lazy<User>` with `type __Lazy<T> = T;`.
+2. **A class used at module top level**, for example in a constant or a decorator argument that is
+   not a function. Use a function: `@Field(() => User)`, not `@Field(User)`.
 
 ---
 
@@ -911,7 +896,6 @@ export class AppModule {}
 ```typescript
 // main.ts (Express)
 import 'reflect-metadata';
-import './@generated/register-all-types.js';
 
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
@@ -955,7 +939,6 @@ export class AppModule {}
 ```typescript
 // main.ts (Fastify)
 import 'reflect-metadata';
-import './@generated/register-all-types.js';
 
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -1004,7 +987,6 @@ export class AppModule {}
 ```typescript
 // main.ts (Fastify + Apollo)
 import 'reflect-metadata';
-import './@generated/register-all-types.js';
 
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -1093,7 +1075,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 ```typescript
 // main.ts
 import 'reflect-metadata';
-import './@generated/register-all-types.js';
 
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
@@ -1144,8 +1125,7 @@ src/@generated/
 │   └── ...
 ├── post/
 │   └── ...
-├── type-registry.ts          # ESM type registry
-├── register-all-types.ts     # Type registration
+├── decimal-helpers.ts        # Decimal transform helpers
 └── index.ts                  # Barrel export (if reExport enabled)
 ```
 
@@ -1169,12 +1149,9 @@ import { User } from './@generated/user/user.model.js';
 
 #### Circular dependency warnings
 
-Enable `esmCompatible` mode and import the type registry:
-
-```typescript
-// main.ts - import early
-import './@generated/register-all-types.js';
-```
+Enable `esmCompatible` mode. Generated types then load in any order; there is nothing to import
+first. If the error names one of your own classes, see
+[Debugging Circular Dependencies](#debugging-circular-dependencies).
 
 #### Type mismatch with Prisma Client
 

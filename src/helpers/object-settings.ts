@@ -283,11 +283,19 @@ function createSettingElement({
     match.groups?.args !== undefined &&
     match.groups.args !== ''
   ) {
-    const options = customType(match.groups.args);
+    // @Directive('@auth(requires: ADMIN)') passes the SDL as a plain string;
+    // @Directive({ arguments: ['@upper'] }) passes it in an options object
+    const sdl: unknown = parseArgs(match.groups.args);
+    // The SDL is not a type name: customType() would read a `.` in it as a namespace
+    const options = typeof sdl === 'string' ? {} : customType(match.groups.args);
+    let directiveArguments = options.arguments;
+    if (typeof sdl === 'string') {
+      directiveArguments = [JSON5.stringify(sdl)];
+    } else if (Array.isArray(options.arguments)) {
+      directiveArguments = options.arguments.map(s => JSON5.stringify(s));
+    }
     merge(element, { from: '@nestjs/graphql', model: true }, options, {
-      arguments: Array.isArray(options.arguments)
-        ? options.arguments.map(s => JSON5.stringify(s))
-        : options.arguments,
+      arguments: directiveArguments,
       kind: 'Decorator',
       name,
       namespace: false,
