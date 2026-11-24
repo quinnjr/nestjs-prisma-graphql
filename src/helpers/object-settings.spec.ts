@@ -577,6 +577,23 @@ describe('createObjectSettings', () => {
       ]);
     });
 
+    it('should not treat a dot in the directive as a namespace', () => {
+      for (const sdl of [
+        '@deprecated(reason: "Use title instead.")',
+        '@link(url: "https://a.example/x")',
+      ]) {
+        const { settings } = createObjectSettings({
+          config,
+          text: `@Directive('${sdl}')`,
+        });
+        const directive = settings.find(s => s.name === 'Directive');
+
+        expect(directive?.arguments).toEqual([`'${sdl}'`]);
+        expect(directive?.namespaceImport).toBeUndefined();
+        expect(directive?.from).toBe('@nestjs/graphql');
+      }
+    });
+
     it('should keep the options object form', () => {
       const { settings } = createObjectSettings({
         config,

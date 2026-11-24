@@ -2,6 +2,7 @@ import type { EventArguments } from '../types.js';
 
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
+import { Node, type SourceFile } from 'ts-morph';
 
 type LogFunction = (message: string) => void;
 const globalConsole: { log: (message?: unknown) => void } = globalThis.console;
@@ -87,44 +88,107 @@ export function removeStaleTypeRegistryFiles(
 }
 
 const REGISTRY_IMPORT = /from\s+['"][^'"]*\/type-registry(?:\.js)?['"]/;
-const GENERATED_CLASS = /@(?:ObjectType|InputType|ArgsType)\(/;
-const REGISTER_CALL = /^\s*registerType\('(?<name>\w+)',\s*\k<name>\);?\s*$/m;
+const REGISTER_CALL = /\bregisterType\(/;
+// 1.x always emitted these two imports on separate lines
+const GENERATED_REGISTER_IMPORT =
+  /^import \{ registerType \} from '[^']*\/type-registry\.js';$/m;
+const GENERATED_GET_TYPE_IMPORT =
+  /^import \{ getType \} from '[^']*\/type-registry\.js';$/m;
 
 /**
- * Whether a file is a class file written by the 1.x generator: a decorated
- * class that imports the registry and ends by registering itself.
+ * Whether a file still uses the removed registry at all.
  */
-function isRegistryConsumer(text: string): boolean {
+function usesTypeRegistry(text: string): boolean {
+  return REGISTRY_IMPORT.test(text) && REGISTER_CALL.test(text);
+}
+
+/**
+ * Whether a file has exactly the shape the 1.x generator wrote: its two
+ * registry imports, other imports, one decorated class made only of
+ * properties, and `registerType('X', X);` as the final statement. Anything
+ * else may be hand-written and must not be deleted.
+ */
+function isGeneratedRegistryConsumer(sourceFile: SourceFile): boolean {
+  const text = sourceFile.getFullText();
+  if (!GENERATED_REGISTER_IMPORT.test(text) || !GENERATED_GET_TYPE_IMPORT.test(text)) {
+    return false;
+  }
+
+  const statements = sourceFile.getStatements();
+  const classes = sourceFile.getClasses();
+  const [classDeclaration] = classes;
+  const lastStatement = statements.at(-1);
+  if (
+    classes.length !== 1 ||
+    classDeclaration === undefined ||
+    lastStatement === undefined
+  ) {
+    return false;
+  }
+
+  const className = classDeclaration.getName() ?? '';
+  const onlyGeneratedStatements = statements.every(
+    statement =>
+      statement === lastStatement ||
+      statement === classDeclaration ||
+      Node.isImportDeclaration(statement) ||
+      Node.isTypeAliasDeclaration(statement),
+  );
+  const onlyProperties = classDeclaration
+    .getMembers()
+    .every(member => Node.isPropertyDeclaration(member));
+  const registersItself =
+    lastStatement.getText().replaceAll(/\s/g, '') ===
+    `registerType('${className}',${className});`;
+
   return (
-    REGISTRY_IMPORT.test(text) && GENERATED_CLASS.test(text) && REGISTER_CALL.test(text)
+    onlyGeneratedStatements &&
+    onlyProperties &&
+    registersItself &&
+    classDeclaration.getDecorators().length > 0
   );
 }
 
 /**
- * Deletes 1.x class files that this run did not regenerate. Without
- * `purgeOutput`, files for a model that was since removed or renamed (or for
- * types an option no longer emits) stay in the output directory. They import
- * the deleted type registry, and the barrels would re-export them, so one
- * orphan breaks the whole build. Every file regenerated in this run no longer
- * imports the registry, so anything that still does is an orphan.
+ * Deals with files that this run did not regenerate and that still use the
+ * removed registry. Without `purgeOutput`, 1.x files for a model that was
+ * since removed or renamed (or for types an option no longer emits) stay in
+ * the output directory, and the barrels would re-export them, so one orphan
+ * breaks the whole build. Every file regenerated in this run no longer
+ * imports the registry, so anything that still does is left over.
+ *
+ * - A file with the exact shape the 1.x generator wrote is deleted.
+ * - Any other file may be hand-written: it is kept on disk, left out of this
+ *   run's barrels, and reported so its owner can migrate it.
  */
 export function removeOrphanedRegistryConsumers(
   args: Pick<EventArguments, 'config' | 'output' | 'project'>,
   log: LogFunction = defaultLog,
-): string[] {
+): { removed: string[]; skipped: string[] } {
   const { config, output, project } = args;
+  const removed: string[] = [];
+  const skipped: string[] = [];
   if (!config.esmCompatible) {
-    return [];
+    return { removed, skipped };
   }
 
-  const removed: string[] = [];
   for (const sourceFile of project.getSourceFiles(`${output}/**/*.ts`)) {
-    if (!isRegistryConsumer(sourceFile.getFullText())) {
+    if (!usesTypeRegistry(sourceFile.getFullText())) {
       continue;
     }
 
     const filePath = sourceFile.getFilePath();
+    const isGenerated = isGeneratedRegistryConsumer(sourceFile);
     project.removeSourceFile(sourceFile);
+
+    if (!isGenerated) {
+      skipped.push(filePath);
+      log(
+        `nestjs-prisma-graphql: WARNING ${filePath} still uses the removed type registry and was not written by the generator. It was left untouched and is excluded from this run's index files. Replace getType('X') with the class and delete registerType() calls.`,
+      );
+      continue;
+    }
+
     // Also remove the emitCompiled forms next to it
     const basePath = filePath.replace(/\.ts$/, '');
     for (const extension of STALE_EXTENSIONS) {
@@ -140,7 +204,7 @@ export function removeOrphanedRegistryConsumers(
     );
   }
 
-  return removed;
+  return { removed, skipped };
 }
 
 /**

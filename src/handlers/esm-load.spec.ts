@@ -93,7 +93,7 @@ model Post {
   id       Int     @id
   authorId Int
   author   User    @relation(fields: [authorId], references: [id])
-  /// @Directive('@deprecated(reason: "Use title instead")')
+  /// @Directive('@deprecated(reason: "Use title instead.")')
   legacy   String?
 }
 
@@ -305,7 +305,7 @@ describe('esmCompatible output has no type registry', () => {
       'utf8',
     );
 
-    expect(model).toContain(`@Directive('@deprecated(reason: "Use title instead")')`);
+    expect(model).toContain(`@Directive('@deprecated(reason: "Use title instead.")')`);
   });
 
   it('loads every generated file as the first import, in its own process', () => {
@@ -459,15 +459,18 @@ describe('upgrading a 1.x output directory without purgeOutput', () => {
     built = project('upgrade', {
       seedFiles: {
         // A model that no longer exists in the schema
-        'gone/gone.model.ts': `import { Field, ObjectType } from '@nestjs/graphql';
+        'gone/gone.model.ts': `import { Field } from '@nestjs/graphql';
+import { ObjectType } from '@nestjs/graphql';
 import { registerType } from '../type-registry.js';
 import { getType } from '../type-registry.js';
 
 @ObjectType()
 export class Gone {
-  @Field(() => getType('User'))
-  user?: unknown;
+
+    @Field(() => getType('User'), {nullable:false})
+    user?: unknown;
 }
+
 
 registerType('Gone', Gone);
 `,

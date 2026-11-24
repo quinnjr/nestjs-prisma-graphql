@@ -741,7 +741,10 @@ This generator is built from the ground up for ESM (ECMAScript Modules).
 > `esmCompatible` mode, and deletes those two files if an older version left them in your output
 > directory. It also deletes generated class files from 1.x that are no longer produced (for
 > example for a model you have since removed): without `purgeOutput` they would stay behind,
-> still importing the registry, and break the build. Each deleted file is logged.
+> still importing the registry, and break the build. Each deleted file is logged. Only files with
+> the exact shape the generator wrote are deleted. A hand-written file in the output directory that
+> uses the registry is never deleted: the generator prints a warning naming it and leaves it out of
+> that run's index files until you migrate it.
 
 What to change in your application:
 
