@@ -6,8 +6,14 @@ import type { FieldLocation } from '../types.js';
 export function getPropertyType(args: {
   type: string;
   location: FieldLocation;
+  /**
+   * Names of enums whose members have custom `@EnumValue(...)` values.
+   * These are typed as the enum itself: the `${Enum}` template literal type
+   * would turn numeric member values into strings.
+   */
+  customValueEnums?: ReadonlySet<string>;
 }): string[] {
-  const { location, type } = args;
+  const { customValueEnums, location, type } = args;
   switch (type) {
     case 'Float':
     case 'Int': {
@@ -42,6 +48,9 @@ export function getPropertyType(args: {
     return [type];
   }
   if (location === 'enumTypes') {
+    if (customValueEnums?.has(type) === true) {
+      return [type];
+    }
     const enumType = `\`\${${type}}\``;
 
     return [enumType];

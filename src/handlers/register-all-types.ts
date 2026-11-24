@@ -1,6 +1,7 @@
 import type { EventArguments } from '../types.js';
 
 import { relativePath } from '../helpers/relative-path.js';
+import { ReExport } from './re-export.js';
 
 /**
  * Generate the register-all-types.ts file that imports all generated types
@@ -42,10 +43,12 @@ export function generateRegisterAllTypes(args: EventArguments): void {
   for (const file of allSourceFiles) {
     const filePath = file.getFilePath();
 
-    // Skip utility files and the register file itself
+    // Skip the root utility files and barrels. Compare by location: a model file may
+    // share a helper's name in its own directory (e.g. type-registry/type-registry.ts).
+    const isRootFile = file.getDirectoryPath() === rootDirectory.getPath();
     if (
-      filePath.endsWith('type-registry.ts') ||
-      filePath.endsWith('register-all-types.ts') ||
+      file === sourceFile ||
+      (isRootFile && file.getBaseNameWithoutExtension() === 'type-registry') ||
       filePath.endsWith('index.ts')
     ) {
       continue;
@@ -115,4 +118,21 @@ export type RegisteredTypeName = typeof registeredTypes[number];
 `;
 
   sourceFile.addStatements(fileContent);
+
+  // reExport=Single builds the root barrel before this file exists, so add it here
+  const rootIndex = rootDirectory.getSourceFile('index.ts');
+  // Without purgeOutput, the barrel may already re-export the file from a previous run
+  const alreadyExported =
+    rootIndex?.getExportDeclaration(
+      declaration =>
+        declaration.getModuleSpecifierValue()?.replace(/\.js$/, '') ===
+        './register-all-types',
+    ) !== undefined;
+  if (
+    config.reExport === ReExport.Single &&
+    rootIndex !== undefined &&
+    !alreadyExported
+  ) {
+    rootIndex.addExportDeclaration({ moduleSpecifier: './register-all-types.js' });
+  }
 }

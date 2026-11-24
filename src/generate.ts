@@ -60,7 +60,11 @@ import {
   buildDependencyGraph,
   detectCircularDependencies,
 } from './helpers/detect-circular-deps.js';
-import { factoryGetSourceFile } from './helpers/factory-get-source-file.js';
+import { hasCustomEnumValues } from './helpers/enum-value-settings.js';
+import {
+  factoryGetSourceFile,
+  getReservedRootFiles,
+} from './helpers/factory-get-source-file.js';
 import { createGetModelName } from './helpers/get-model-name.js';
 
 export async function generate(
@@ -158,6 +162,7 @@ export async function generate(
     output: generatorOutputValue,
     outputFilePattern: config.outputFilePattern,
     project,
+    reservedRootFiles: getReservedRootFiles(config),
   });
   const { datamodel, schema } = JSON.parse(JSON.stringify(dmmf)) as Document;
   const removeTypes = new Set<string>();
@@ -172,6 +177,9 @@ export async function generate(
     circularDependencies,
     classTransformerTypeModels: new Set(),
     config,
+    customValueEnums: new Set(
+      datamodel.enums.filter(hasCustomEnumValues).map(x => x.name),
+    ),
     enums: mapKeys(datamodel.enums, x => x.name),
     eventEmitter,
     fieldSettings,
@@ -257,8 +265,11 @@ export async function generate(
     }
   }
 
+  await eventEmitter.emit('BeforeGenerateFiles', eventArguments);
+
   // Pre-save processing steps for ESM compatibility
-  // Must run BEFORE GenerateFiles so created files are included in the save
+  // Must run AFTER BeforeGenerateFiles, whose handlers (noAtomicOperations, reExport)
+  // remove or add files, and BEFORE GenerateFiles so created files are included in the save
   if (config.esmCompatible) {
     // 1. Generate barrel exports (index.ts files) if reExport="None"
     generateBarrelExports(eventArguments);
@@ -274,7 +285,6 @@ export async function generate(
     generateRegisterAllTypes(eventArguments);
   }
 
-  await eventEmitter.emit('BeforeGenerateFiles', eventArguments);
   await eventEmitter.emit('GenerateFiles', eventArguments);
   await eventEmitter.emit('End', eventArguments);
 

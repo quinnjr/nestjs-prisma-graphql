@@ -35,12 +35,16 @@ export function generateBarrelExports(args: EventArguments): void {
     `nestjs-prisma-graphql: found ${subdirs.length} subdirectories for barrel generation`,
   );
 
+  // Directories that received an index.ts (only these can be re-exported)
+  const barrelDirectories: string[] = [];
+
   // Create index file in each subdirectory
   for (const dir of subdirs) {
     const dirName = dir.getBaseName();
 
-    // Skip special directories
-    if (dirName === 'type-registry' || dirName.startsWith('.')) {
+    // Skip hidden directories. Root helpers (type-registry.ts, ...) are files, so a
+    // model directory such as `type-registry/` must not be skipped.
+    if (dirName.startsWith('.')) {
       continue;
     }
 
@@ -66,21 +70,15 @@ export function generateBarrelExports(args: EventArguments): void {
     if (exports.length > 0) {
       exports.sort();
       dir.createSourceFile(`index.ts`, `${exports.join('\n')}\n`, { overwrite: true });
+      barrelDirectories.push(dirName);
       barrelCount++;
     }
   }
 
   // Create root index file
-  const rootExports: string[] = [];
-  for (const dir of subdirs) {
-    const dirName = dir.getBaseName();
-
-    if (dirName.startsWith('.')) {
-      continue;
-    }
-
-    rootExports.push(`export * from './${dirName}/index.js';`);
-  }
+  const rootExports = barrelDirectories.map(
+    dirName => `export * from './${dirName}/index.js';`,
+  );
 
   if (rootExports.length > 0) {
     rootExports.sort();

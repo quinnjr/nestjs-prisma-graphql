@@ -56,4 +56,37 @@ describe('generateFileName', () => {
 
     expect(result).toBe('inputs/user-create.input.ts');
   });
+
+  it('should keep the type suffix when the template has no {type}', () => {
+    const base = { getModelName: () => 'Thing', template: '{model}/{name}.ts' };
+
+    expect(
+      generateFileName({ ...base, name: 'ThingSumAggregateInput', type: 'input' }),
+    ).toBe('thing/thing-sum-aggregate-input.ts');
+    expect(generateFileName({ ...base, name: 'ThingSumAggregate', type: 'output' })).toBe(
+      'thing/thing-sum-aggregate.ts',
+    );
+  });
+
+  it('should strip the type suffix when the template uses {plural.type} only', () => {
+    expect(
+      generateFileName({
+        getModelName: () => 'User',
+        name: 'UserCreateInput',
+        template: '{plural.type}/{name}.ts',
+        type: 'input',
+      }),
+    ).toBe('inputs/user-create.ts');
+  });
+
+  it('should ignore a leading ./ in the template', () => {
+    expect(
+      generateFileName({
+        getModelName: () => 'User',
+        name: 'UserCreateInput',
+        template: './{model}/{name}.{type}.ts',
+        type: 'input',
+      }),
+    ).toBe('user/user-create.input.ts');
+  });
 });

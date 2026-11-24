@@ -33,6 +33,7 @@ Generate object types, inputs, args, enums, and more from your Prisma schema for
   - [@Directive](#directive)
   - [Deprecation](#deprecation)
   - [Complexity](#complexity)
+  - [Enum Values](#enum-values)
 - [Validation with class-validator](#validation-with-class-validator)
 - [Custom Decorators](#custom-decorators)
 - [GraphQL Scalars](#graphql-scalars)
@@ -106,6 +107,10 @@ For `Decimal` and `Json` field types:
 ```bash
 pnpm add graphql-type-json prisma-graphql-type-decimal
 ```
+
+`prisma-graphql-type-decimal` is ESM-only. CommonJS projects need `moduleResolution` set to
+`node16`, `nodenext` or `bundler` (not the default `node10`), and Node.js 20.19+ or 22.12+ to
+`require()` it.
 
 For validation support:
 
@@ -280,6 +285,10 @@ outputFilePattern = "{name}.{type}.ts"
 outputFilePattern = "{plural.type}/{name}.{type}.ts"
 ```
 
+`{name}` drops a trailing `-input`, `-args` or `-enum` only when the pattern also contains
+`{type}` or `{plural.type}`. Without one, the suffix is kept (`user-create-input.ts`) so that,
+for example, `UserSumAggregateInput` and `UserSumAggregate` don't end up in the same file.
+
 ### Code Generation Options
 
 | Option                                  | Type       | Default | Description                                                               |
@@ -287,7 +296,7 @@ outputFilePattern = "{plural.type}/{name}.{type}.ts"
 | `combineScalarFilters`                  | `boolean`  | `false` | Combine nested/nullable scalar filters into single types                  |
 | `noAtomicOperations`                    | `boolean`  | `false` | Remove atomic operation input types (IntFieldUpdateOperationsInput, etc.) |
 | `reExport`                              | `enum`     | `None`  | Create index.ts barrel files                                              |
-| `emitSingle`                            | `boolean`  | `false` | Generate all types in a single file                                       |
+| `emitSingle`                            | `boolean`  | `false` | Generate all types in a single file (helper modules stay separate)        |
 | `emitCompiled`                          | `boolean`  | `false` | Emit compiled JavaScript alongside TypeScript                             |
 | `purgeOutput`                           | `boolean`  | `false` | Delete output folder before generating                                    |
 | `emitBlocks`                            | `string[]` | all     | Selective generation: `enums`, `models`, `inputs`, `outputs`, `args`      |
@@ -446,6 +455,69 @@ model User {
   followers User[]
 }
 ```
+
+### Enum Values
+
+By default each generated TypeScript enum member gets its own name as a string
+value (`ADMIN = "ADMIN"`). Use `/// @EnumValue(...)` on an enum value to assign
+a custom string or number instead:
+
+```prisma
+enum Role {
+  /// @EnumValue("administrator")
+  /// Full access
+  ADMIN
+  USER
+}
+
+enum Priority {
+  /// @EnumValue(1)
+  LOW
+  /// @EnumValue(2)
+  HIGH
+}
+```
+
+Generates:
+
+<!-- prettier-ignore -->
+```typescript
+export enum Role {
+    ADMIN = "administrator",
+    USER = "USER"
+}
+
+export enum Priority {
+    LOW = 1,
+    HIGH = 2
+}
+```
+
+- The argument must be a quoted string (single or double quotes) or a finite number.
+- Values must be unique within an enum; duplicates fail generation.
+- Other `///` lines on the value become its GraphQL description, and a `/// @deprecated reason` line
+  marks the value deprecated (both are passed through `registerEnumType`'s `valuesMap`).
+- `@EnumValue` belongs on enum values. Placing it above the `enum` itself fails generation.
+
+> **Behaviour change:** enum value comments now reach the GraphQL schema for **every** enum, not only
+> enums that use `@EnumValue`. Earlier versions dropped them, so existing `///` comments and
+> `@deprecated` lines on enum values will start to appear as descriptions and deprecations.
+
+- The GraphQL schema is unchanged: GraphQL still exposes `ADMIN`, `LOW`, etc. Only the internal TypeScript value changes.
+- Fields using an enum with custom values are typed as the enum (`role: Role`) instead of the `` `${Role}` `` string union.
+
+> **Note:** Prisma Client still reads and writes enum values by name (`'ADMIN'`, `'LOW'`).
+> When an enum has custom values, convert at the boundary, or GraphQL will fail to serialize
+> values it does not recognise:
+>
+> - Prisma → generated enum: `Role[user.role]` (`'ADMIN'` → `'administrator'`)
+> - Generated enum → Prisma: numeric enums have a built-in reverse mapping (`Priority[1]` → `'LOW'`);
+>   for string enums build one, e.g. `Object.fromEntries(Object.entries(Role).map(([k, v]) => [v, k]))`
+>
+> This also applies to generated args and input classes: their enum fields (including filters
+> such as `in`, `notIn` and `has`) use the custom values, so they are no longer directly
+> assignable to Prisma Client arguments (`prisma.thing.findMany(args)` will not type-check)
+> until you convert them.
 
 ---
 
@@ -722,9 +794,19 @@ The generator creates:
 | `isTypeRegistered(name)`   | Check if a type is registered                   |
 | `validateRegistry(types)`  | Validate expected types are registered          |
 
+The registry also exports the type alias `__Lazy<T> = T`. Properties whose GraphQL type resolves
+lazily through `getType()` are typed `__Lazy<X>` (e.g. `every?: __Lazy<PostWhereInput>`). It is
+identical to `X` for type checking, but with `emitDecoratorMetadata` TypeScript records `Object`
+as the design type instead of reading `X` while the class may still be uninitialized in an ESM
+import cycle.
+
 #### Setup
 
 Import the registry **first** in your application bootstrap:
+
+> With `emitSingle = true` there is no `register-all-types.js`: the single `index.js` registers
+> every type itself, so import `./@generated/index.js` first instead. The `type-registry` and
+> `decimal-helpers` modules stay next to it as separate files.
 
 ```typescript
 // main.ts - register-all-types MUST be the first import!
@@ -1113,6 +1195,9 @@ Install the required package:
 ```bash
 pnpm add prisma-graphql-type-decimal decimal.js
 ```
+
+In a CommonJS project, also check the `moduleResolution` and Node.js requirements under
+[Optional Dependencies](#optional-dependencies).
 
 #### JSON type not found
 
