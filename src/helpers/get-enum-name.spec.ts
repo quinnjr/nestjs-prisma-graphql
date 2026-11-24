@@ -32,4 +32,8 @@ describe('getEnumName', () => {
   it('should handle underscore in enum name', () => {
     expect(getEnumName(`\`\${USER_ROLE}\``)).toBe('USER_ROLE');
   });
+
+  it('should return plain enum references unchanged', () => {
+    expect(getEnumName('Role')).toBe('Role');
+  });
 });

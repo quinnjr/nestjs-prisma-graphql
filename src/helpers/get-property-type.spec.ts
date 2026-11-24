@@ -106,6 +106,31 @@ describe('getPropertyType', () => {
     });
   });
 
+  describe('enumTypes with custom @EnumValue values', () => {
+    it('should return the enum type itself', () => {
+      expect(
+        getPropertyType({
+          customValueEnums: new Set(['Role']),
+          location: 'enumTypes',
+          type: 'Role',
+        }),
+      ).toEqual(['Role']);
+    });
+
+    it('should keep template literal for enums without custom values', () => {
+      expect(
+        getPropertyType({
+          customValueEnums: new Set(['Role']),
+          location: 'enumTypes',
+          type: 'Status',
+        }),
+      ).toEqual([
+        // eslint-disable-next-line no-template-curly-in-string
+        '`${Status}`',
+      ]);
+    });
+  });
+
   describe('scalar location with custom types', () => {
     it('should return the type as-is for unknown scalar types', () => {
       expect(getPropertyType({ location: 'scalar', type: 'CustomScalar' })).toEqual([

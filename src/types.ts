@@ -59,6 +59,10 @@ export interface EventArguments {
   typeNames: Set<string>;
   removeTypes: Set<string>;
   enums: Record<string, DMMF.DatamodelEnum | undefined>;
+  /**
+   * Names of enums with at least one `/// @EnumValue(...)` directive
+   */
+  customValueEnums: Set<string>;
   getModelName: (name: string) => string | undefined;
   /**
    * Input types for this models should be decorated @Type(() => Self)

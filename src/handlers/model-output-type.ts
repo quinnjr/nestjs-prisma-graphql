@@ -18,6 +18,7 @@ import { getOutputTypeName } from '../helpers/get-output-type-name.js';
 import { getPropertyType } from '../helpers/get-property-type.js';
 import { ImportDeclarationMap } from '../helpers/import-declaration-map.js';
 import { isManyAndReturnOutputType } from '../helpers/is-many-and-return.js';
+import { addLazyTypeImport, wrapLazyPropertyType } from '../helpers/lazy-type.js';
 import {
   createObjectSettings,
   type ObjectSetting,
@@ -102,8 +103,9 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
   const lazyTypes = new Set<string>();
 
   // Add type registry imports if ESM compatible mode is enabled
+  let typeRegistryPath = '';
   if (config.esmCompatible) {
-    let typeRegistryPath = relativePath(
+    typeRegistryPath = relativePath(
       sourceFile.getFilePath(),
       `${output}/type-registry.ts`,
     );
@@ -142,6 +144,7 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
     const propertyType = castArray(
       propertySettings?.name ??
         getPropertyType({
+          customValueEnums: args.customValueEnums,
           location,
           type: outputTypeName,
         }),
@@ -198,13 +201,19 @@ export function modelOutputType(outputType: OutputType, args: EventArguments): v
       importDeclarations.create({ ...fieldType });
     }
 
+    if (useGetType) {
+      addLazyTypeImport(importDeclarations, typeRegistryPath);
+    }
+
     const property = propertyStructure({
       hasExclamationToken: true,
       hasQuestionToken: location === 'outputObjectTypes',
       isList,
       isNullable: field.isNullable,
       name: field.name,
-      propertyType,
+      propertyType: useGetType
+        ? wrapLazyPropertyType(propertyType, graphqlType)
+        : propertyType,
     });
 
     if (

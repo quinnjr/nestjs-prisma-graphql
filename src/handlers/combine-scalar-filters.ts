@@ -119,6 +119,16 @@ function postBegin(args: EventArguments): void {
       `${type}NullableListFilter`,
       `Nested${type}NullableListFilter`,
     ]);
+
+    // A filter may only exist as its non-nullable Nested variant, e.g. NestedFloatFilter
+    // used by IntWithAggregatesFilter._avg when the schema has no Float field. Nested*
+    // types are removed below, so derive the combined filter from it.
+    for (const suffix of ['Filter', 'WithAggregatesFilter', 'ListFilter']) {
+      const filterName = `${type}${suffix}`;
+      if (!(filterName in inputTypeByName)) {
+        replaceBogusFilters(filterName, [`Nested${filterName}`]);
+      }
+    }
   }
 
   for (const modelName of modelNames) {

@@ -90,6 +90,7 @@ export function outputType(outputTypeArg: OutputType, args: EventArguments): voi
     const propertyType = castArray(
       propertySettings?.name ??
         getPropertyType({
+          customValueEnums: args.customValueEnums,
           location,
           type: outputTypeName,
         }),
